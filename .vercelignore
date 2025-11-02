@@ -1,0 +1,10 @@
+# riesig/unnötig für Deploy
+node_modules/
+.next/
+.vercel/output/
+backups/
+.git/
+*.tgz
+*.zip
+tmp/
+.cache/

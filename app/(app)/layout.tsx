@@ -16,13 +16,13 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <li><Link className="block px-3 py-2 rounded-md hover:bg-slate-200" href="/mitglieder">Mitglieder</Link></li>
               <li><Link className="block px-3 py-2 rounded-md hover:bg-slate-200" href="/artikel">Artikel</Link></li>
               <li><Link className="block px-3 py-2 rounded-md hover:bg-slate-200" href="/kassenbuch">Kassenbuch</Link></li>
-              <li><Link className="block px-3 py-2 rounded-md hover:bg-slate-200" href="/bestand">Bestand prüfen</Link></li>
+              <li><Link className="block px-3 py-2 rounded-md hover:bg-slate-200" href="/kassenbestand">Bestand prüfen</Link></li>
             </ul>
 
             <div className="my-3 h-px bg-slate-300" />
 
             <ul className="space-y-1">
-              <li><Link className="block px-3 py-2 rounded-md hover:bg-slate-200" href="/entnahme">Entnahme buchen</Link></li>
+              <li><Link className="block px-3 py-2 rounded-md hover:bg-slate-200" href="/admin/entnahme">Entnahme buchen</Link></li>
               <li><Link className="block px-3 py-2 rounded-md hover:bg-slate-200" href="/benutzer">Benutzer</Link></li>
             </ul>
 
@@ -30,7 +30,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
             <ul className="space-y-1">
               <li><Link className="block px-3 py-2 rounded-md hover:bg-slate-200" href="/bahnen">Bahnen</Link></li>
-              <li><Link className="block px-3 py-2 rounded-md hover:bg-slate-200" href="/zeitslots">Zeitslots</Link></li>
+              <li><Link className="block px-3 py-2 rounded-md hover:bg-slate-200" href="/zeitregeln">Zeitslots</Link></li>
               <li><Link className="block px-3 py-2 rounded-md hover:bg-slate-200" href="/bahnbuchung">Buchungsübersicht</Link></li>
             </ul>
 

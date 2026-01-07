@@ -1,11 +1,5 @@
-import "../globals.css";
-export const dynamic = "force-dynamic";
-import type { ReactNode } from "react";
+export const metadata = { title: "SGS" };
 
-export default function PublicLayout({ children }: { children: ReactNode }) {
-  return (
-    <html lang="de">
-      <body className="min-h-dvh bg-white">{children}</body>
-    </html>
-  );
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <div className="bg-[#f3f4f6] min-h-screen">{children}</div>;
 }

@@ -63,14 +63,7 @@ export default function MitgliederPage() {
 
         <div style={{ border:"1px solid #e5e7eb", borderRadius:10, overflow:"hidden", background:"#fff" }}>
           <table style={{ width:"100%", borderCollapse:"collapse", tableLayout:"fixed" }}>
-            <colgroup>
-              <col style={{ width:"110px" }} />  {/* Mitglieds-Nr. schmal */}
-              <col style={{ width:"340px" }} />  {/* Name breiter */}
-              <col style={{ width:"220px" }} />  {/* Ort */}
-              <col style={{ width:"100px" }} />  {/* Preisgruppe schmal */}
-              <col style={{ width:"140px" }} />  {/* Status */}
-              <col style={{ width:"110px" }} />  {/* Aktionen */}
-            </colgroup>
+            <colgroup>{[<col key="c1" style={{ width:"110px" }} />,<col key="c2" style={{ width:"340px" }} />,<col key="c3" style={{ width:"220px" }} />,<col key="c4" style={{ width:"100px" }} />,<col key="c5" style={{ width:"140px" }} />,<col key="c6" style={{ width:"110px" }} />]}</colgroup>
             <thead style={{ background:"#f9fafb" }}>
               <tr>
                 <th style={{ padding:12, textAlign:"left" }}>Mitglieds-Nr.</th>

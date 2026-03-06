@@ -11,6 +11,7 @@ type Mitglied = {
 export default function MitgliederPage() {
   const [rows, setRows] = useState<Mitglied[]>([]);
   const [q, setQ] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
 
   async function load() {
@@ -21,7 +22,15 @@ export default function MitgliederPage() {
       : [];
     setRows(sorted);
   }
-  useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    (async () => {
+      const s = await fetch("/api/session", { cache: "no-store" });
+      const sd = await s.json().catch(() => ({}));
+      setIsAdmin(!!sd?.user?.isAdmin);
+      await load();
+    })();
+  }, []);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -99,7 +108,7 @@ export default function MitgliederPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <Link href={`/mitglieder/${m.id}`} title="Bearbeiten" className="text-slate-500 hover:text-blue-600 transition-colors text-base leading-none">✏️</Link>
-                      <button onClick={() => delItem(m.id)} title="Löschen" className="text-slate-500 hover:text-red-600 transition-colors text-base leading-none">🗑️</button>
+                      {isAdmin && <button onClick={() => delItem(m.id)} title="Löschen" className="text-slate-500 hover:text-red-600 transition-colors text-base leading-none">🗑️</button>}
                     </div>
                   </td>
                 </tr>

@@ -9,12 +9,18 @@ export default function ArtikelPage() {
   const [rows, setRows] = useState<Row[]>([]);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch("/api/artikel", { cache: "no-store" });
-        const j = await r.json().catch(() => []);
+        const [sRes, rRes] = await Promise.all([
+          fetch("/api/session", { cache: "no-store" }),
+          fetch("/api/artikel", { cache: "no-store" }),
+        ]);
+        const sd = await sRes.json().catch(() => ({}));
+        setIsAdmin(!!sd?.user?.isAdmin);
+        const j = await rRes.json().catch(() => []);
         const list: Row[] = Array.isArray(j) ? j : Array.isArray(j?.artikel) ? j.artikel : [];
         setRows(list);
       } finally {
@@ -87,7 +93,7 @@ export default function ArtikelPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <Link href={`/artikel/${a.id}`} title="Bearbeiten" className="text-slate-500 hover:text-blue-600 transition-colors text-base leading-none">✏️</Link>
-                      <button onClick={() => delArtikel(a.id)} title="Löschen" className="text-slate-500 hover:text-red-600 transition-colors text-base leading-none">🗑️</button>
+                      {isAdmin && <button onClick={() => delArtikel(a.id)} title="Löschen" className="text-slate-500 hover:text-red-600 transition-colors text-base leading-none">🗑️</button>}
                     </div>
                   </td>
                 </tr>

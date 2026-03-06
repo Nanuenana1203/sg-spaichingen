@@ -3,12 +3,14 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+type Gate = "loading" | "ok" | "no-session" | "forbidden";
 type Mitglied = {
   id: number; mitgliedsnr: string; name: string;
   ort?: string; preisgruppe?: string; gesperrt?: boolean;
 };
 
 export default function MitgliederverwaltungPage() {
+  const [gate, setGate] = useState<Gate>("loading");
   const [rows, setRows] = useState<Mitglied[]>([]);
   const [q, setQ] = useState("");
   const router = useRouter();
@@ -23,7 +25,20 @@ export default function MitgliederverwaltungPage() {
       : [];
     setRows(sorted);
   }
-  useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const s = await fetch("/api/session", { cache: "no-store" });
+        const sd = await s.json().catch(() => ({}));
+        const user = sd?.user ?? null;
+        if (!user) return setGate("no-session");
+        if (!user.isAdmin) return setGate("forbidden");
+        setGate("ok");
+        await load();
+      } catch { setGate("no-session"); }
+    })();
+  }, []);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -40,6 +55,28 @@ export default function MitgliederverwaltungPage() {
     await fetch(`/api/mitglieder/${id}`, { method: "DELETE" });
     await load();
   };
+
+  if (gate !== "ok") {
+    const title = gate === "loading" ? "Lade…" : gate === "no-session" ? "Nicht angemeldet" : "Kein Zugriff";
+    const msg = gate === "loading" ? "" : gate === "no-session"
+      ? "Bitte zuerst einloggen, um die Mitgliederverwaltung zu öffnen."
+      : "Für die Mitgliederverwaltung ist Admin-Recht erforderlich.";
+    const btnHref = gate === "no-session" ? "/" : "/dashboard";
+    const btnText = gate === "no-session" ? "Zur Anmeldung" : "Zum Dashboard";
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-md w-full text-center space-y-4">
+          <h1 className="text-xl font-bold text-slate-900">{title}</h1>
+          {msg && <p className="text-sm text-slate-600">{msg}</p>}
+          {gate !== "loading" && (
+            <Link href={btnHref} className="inline-flex px-4 py-2 rounded-lg bg-slate-800 text-white text-sm font-medium hover:bg-slate-700 transition-colors">
+              {btnText}
+            </Link>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">

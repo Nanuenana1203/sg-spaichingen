@@ -50,17 +50,27 @@ export default function DienstePage() {
     await load();
   }
 
-  if (gate === "loading") return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-      <p className="text-slate-500 text-sm">Lade…</p>
-    </div>
-  );
-  if (gate === "no-session") { router.replace("/"); return null; }
-  if (gate === "forbidden") return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-      <p className="text-red-600 text-sm">Kein Zugriff</p>
-    </div>
-  );
+  if (gate !== "ok") {
+    const title = gate === "loading" ? "Lade…" : gate === "no-session" ? "Nicht angemeldet" : "Kein Zugriff";
+    const msg = gate === "loading" ? "" : gate === "no-session"
+      ? "Bitte zuerst einloggen, um die Dienste zu öffnen."
+      : "Für die Dienstverwaltung ist Admin-Recht erforderlich.";
+    const btnHref = gate === "no-session" ? "/" : "/dashboard";
+    const btnText = gate === "no-session" ? "Zur Anmeldung" : "Zum Dashboard";
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-md w-full text-center space-y-4">
+          <h1 className="text-xl font-bold text-slate-900">{title}</h1>
+          {msg && <p className="text-sm text-slate-600">{msg}</p>}
+          {gate !== "loading" && (
+            <Link href={btnHref} className="inline-flex px-4 py-2 rounded-lg bg-slate-800 text-white text-sm font-medium hover:bg-slate-700 transition-colors">
+              {btnText}
+            </Link>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">

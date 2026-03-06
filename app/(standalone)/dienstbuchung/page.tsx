@@ -81,11 +81,13 @@ type ActiveBooking = { slotId: number; datum: string; zeitVon: string; zeitBis: 
 
 const inp = "px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 
+type Gate = "loading" | "ok" | "no-session" | "forbidden";
+
 export default function DienstbuchungPage() {
   const router = useRouter();
+  const [gate, setGate] = useState<Gate>("loading");
   const [dienste, setDienste] = useState<Dienst[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [name, setName] = useState("");
   const [telefon, setTelefon] = useState("");
   const [active, setActive] = useState<ActiveBooking | null>(null);
@@ -95,14 +97,14 @@ export default function DienstbuchungPage() {
     (async () => {
       setLoading(true);
       try {
-        // Einmalig Session prüfen — bestimmt welche API und ob Namen gezeigt werden
         const s = await fetch("/api/session", { cache: "no-store", credentials: "include" });
         const sd = await s.json().catch(() => ({}));
-        const loggedIn = !!sd?.user;
-        setIsLoggedIn(loggedIn);
+        const user = sd?.user ?? null;
+        if (!user) { setGate("no-session"); return; }
+        if (!user.isAdmin) { setGate("forbidden"); return; }
+        setGate("ok");
 
-        const url = loggedIn ? "/api/dienste" : "/api/dienste-public";
-        const r = await fetch(url, { cache: "no-store" });
+        const r = await fetch("/api/dienste", { cache: "no-store" });
         const d = await r.json().catch(() => []);
         const all: Dienst[] = Array.isArray(d) ? d : [];
         setDienste(all.filter(di => di.aktiv));
@@ -111,11 +113,9 @@ export default function DienstbuchungPage() {
   }, []);
 
   async function load() {
-    // Wird nur nach Buchungen aufgerufen — isLoggedIn bleibt unverändert
     setLoading(true);
     try {
-      const url = isLoggedIn ? "/api/dienste" : "/api/dienste-public";
-      const r = await fetch(url, { cache: "no-store" });
+      const r = await fetch("/api/dienste", { cache: "no-store" });
       const d = await r.json().catch(() => []);
       const all: Dienst[] = Array.isArray(d) ? d : [];
       setDienste(all.filter(di => di.aktiv));
@@ -150,7 +150,7 @@ export default function DienstbuchungPage() {
     setBooking(true);
     toast.info("Buchung wird durchgeführt…");
     try {
-      const apiUrl = isLoggedIn ? "/api/dienst-buchen" : "/api/dienst-buchen-public";
+      const apiUrl = "/api/dienst-buchen";
       const r = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -173,6 +173,28 @@ export default function DienstbuchungPage() {
       setActive(null);
       await load();
     } finally { setBooking(false); }
+  }
+
+  if (gate !== "ok") {
+    const title = gate === "loading" ? "Lade…" : gate === "no-session" ? "Nicht angemeldet" : "Kein Zugriff";
+    const msg = gate === "loading" ? "" : gate === "no-session"
+      ? "Bitte zuerst einloggen, um die Dienstübersicht zu öffnen."
+      : "Für die Dienstübersicht ist Admin-Recht erforderlich.";
+    const btnHref = gate === "no-session" ? "/" : "/dashboard";
+    const btnText = gate === "no-session" ? "Zur Anmeldung" : "Zum Dashboard";
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-md w-full text-center space-y-4">
+          <h1 className="text-xl font-bold text-slate-900">{title}</h1>
+          {msg && <p className="text-sm text-slate-600">{msg}</p>}
+          {gate !== "loading" && (
+            <Link href={btnHref} className="inline-flex px-4 py-2 rounded-lg bg-slate-800 text-white text-sm font-medium hover:bg-slate-700 transition-colors">
+              {btnText}
+            </Link>
+          )}
+        </div>
+      </div>
+    );
   }
 
   if (loading) return (
@@ -245,9 +267,7 @@ export default function DienstbuchungPage() {
                   <div className="divide-y divide-slate-100">
                     {slots.map(slot => {
                       const zeilen = slot.dienst_zeilen ?? [];
-                      const gebucht = isLoggedIn
-                        ? zeilen.filter(z => z.name).length
-                        : (slot.anzahl_gebucht ?? 0);
+                      const gebucht = zeilen.filter(z => z.name).length;
                       const frei = slot.anzahl_personen - gebucht;
                       const ausgebucht = frei <= 0;
                       const flex = isFlexible(slot);
@@ -349,8 +369,8 @@ export default function DienstbuchungPage() {
                               </div>
                             )}
 
-                            {/* Buchungsdetails (nur für eingeloggte Nutzer) */}
-                            {isLoggedIn && (gebuchteZeilen.length > 0 || freieZeilen.length > 0) && (
+                            {/* Buchungsdetails */}
+                            {(gebuchteZeilen.length > 0 || freieZeilen.length > 0) && (
                               <div className="mx-5 mb-4 rounded-xl border border-slate-200 overflow-hidden">
                                 <table className="w-full">
                                   <thead className="bg-slate-50 border-b border-slate-200">

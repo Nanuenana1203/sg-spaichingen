@@ -20,7 +20,7 @@ export default function Home() {
       });
       const data = await res.json().catch(() => null);
       if (res.ok && data?.ok === true) {
-        document.cookie = `sgs_session=1; Path=/; Max-Age=${60 * 60 * 8}; SameSite=Lax`;
+        sessionStorage.setItem("sgs_alive", "1");
         window.location.href = "/dashboard";
       } else {
         setMsg("Name oder Kennwort ungültig oder Rechner nicht freigegeben");

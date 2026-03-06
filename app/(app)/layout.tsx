@@ -4,10 +4,12 @@ import type { ReactNode } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import LogoutButton from "./LogoutButton";
+import SessionGuard from "./SessionGuard";
 
 export const metadata = { title: "SGS" };
 
 const navItem = "block px-3 py-1.5 rounded-md text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors";
+const navSection = "flex items-center gap-2 px-1 pt-3 pb-1";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const cookieStore = await cookies();
@@ -21,22 +23,31 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       <div className="mx-auto max-w-7xl flex">
         <aside className="w-52 shrink-0 p-3 sticky top-0 h-screen overflow-y-auto">
           <nav className="space-y-0.5">
-            <p className="px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">Kasse</p>
+            <div className={navSection}>
+              <span className="w-1 h-3.5 rounded-full bg-blue-400 shrink-0" />
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Kasse</span>
+            </div>
             <Link className={navItem} href="/kasse">Kasse</Link>
             <Link className={navItem} href="/bahnbuchung">Buchungsübersicht</Link>
 
-            <div className="my-2 h-px bg-slate-200" />
-            <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">Stammdaten</p>
+            <div className={navSection}>
+              <span className="w-1 h-3.5 rounded-full bg-blue-400 shrink-0" />
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Stammdaten</span>
+            </div>
             <Link className={navItem} href="/mitglieder">Kunden</Link>
             <Link className={navItem} href="/artikel">Artikel</Link>
 
-            <div className="my-2 h-px bg-slate-200" />
-            <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">Buchhaltung</p>
+            <div className={navSection}>
+              <span className="w-1 h-3.5 rounded-full bg-blue-400 shrink-0" />
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Buchhaltung</span>
+            </div>
             <Link className={navItem} href="/kassenbuch">Kassenbuch</Link>
             <Link className={navItem} href="/kassenbestand">Bestand prüfen</Link>
 
-            <div className="my-2 h-px bg-slate-200" />
-            <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">Administration</p>
+            <div className={navSection}>
+              <span className="w-1 h-3.5 rounded-full bg-blue-400 shrink-0" />
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Administration</span>
+            </div>
             <Link className={navItem} href="/admin/entnahme">Entnahme buchen</Link>
             <Link className={navItem} href="/mitgliederverwaltung">Mitgliederverwaltung</Link>
             <Link className={navItem} href="/benutzer">Benutzer</Link>
@@ -45,14 +56,16 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             <Link className={navItem} href="/dienste">Dienste</Link>
             <Link className={navItem} href="/dienstbuchung">Dienstübersicht</Link>
 
-            <Link className={navItem} href="/passwort">Kennwort ändern</Link>
-
             <div className="my-2 h-px bg-slate-200" />
+            <Link className={navItem} href="/passwort">Kennwort ändern</Link>
             <LogoutButton />
           </nav>
         </aside>
 
-        <main className="flex-1 p-6 pb-24 min-w-0">{children}</main>
+        <main className="flex-1 p-6 pb-24 min-w-0">
+          <SessionGuard />
+          {children}
+        </main>
       </div>
 
       <div

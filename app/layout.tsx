@@ -13,11 +13,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="de">
       <body className="min-h-screen bg-slate-100 text-slate-900">
         {children}
-        <div className="fixed bottom-4 right-6 z-[9999] text-xs text-slate-500 bg-white/85 backdrop-blur px-3 py-2 rounded-lg border border-slate-200 shadow pointer-events-none">
-        </div>
-        
-  
-</body>
+      </body>
     </html>
   );
 }

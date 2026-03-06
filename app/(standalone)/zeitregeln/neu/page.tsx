@@ -2,7 +2,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-type Bahn = { id:number; nummer:string|null; name:string|null };
+type Bahn = { id: number; nummer: string | null; name: string | null };
+
+const inp = "w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
+const lbl = "block text-sm font-medium text-slate-700 mb-1.5";
 
 export default function ZeitregelNeuPage() {
   const router = useRouter();
@@ -29,20 +32,8 @@ export default function ZeitregelNeuPage() {
   async function speichern() {
     setSaving(true);
     try {
-      const body = {
-        weekday,
-        start_time: startTime,
-        end_time: endTime,
-        slot_minutes: slotMinutes,
-        aktiv,
-        alle_bahnen: alleBahnen,
-        bahn_ids: bahnIds,
-      };
-      const r = await fetch("/api/zeitregeln", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+      const body = { weekday, start_time: startTime, end_time: endTime, slot_minutes: slotMinutes, aktiv, alle_bahnen: alleBahnen, bahn_ids: bahnIds };
+      const r = await fetch("/api/zeitregeln", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       if (!r.ok) throw new Error("Fehler");
       router.push("/zeitregeln");
     } catch {
@@ -53,135 +44,87 @@ export default function ZeitregelNeuPage() {
   }
 
   function toggleBahn(id: number) {
-    setBahnIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
+    setBahnIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   }
 
   return (
-    <main style={{ padding: 24 }}>
-      <div style={{ maxWidth: 700, margin: "0 auto" }}>
-        <h1 style={{ textAlign: "center", fontSize: 26, fontWeight: 800, marginBottom: 16 }}>
-          Zeitregel anlegen
-        </h1>
+    <div className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-4xl px-6 py-8">
+        <h1 className="text-2xl font-bold text-slate-900 mb-6">Zeitregel anlegen</h1>
 
-        <div style={{ display: "grid", gap: 16 }}>
-          <label>
-            Wochentag:
-            <select
-              value={weekday}
-              onChange={(e) => setWeekday(Number(e.target.value))}
-              style={{ marginLeft: 8, padding: 6 }}
-            >
-              <option value={0}>Sonntag</option>
-              <option value={1}>Montag</option>
-              <option value={2}>Dienstag</option>
-              <option value={3}>Mittwoch</option>
-              <option value={4}>Donnerstag</option>
-              <option value={5}>Freitag</option>
-              <option value={6}>Samstag</option>
-            </select>
-          </label>
-
-          <div style={{ display: "flex", gap: 16 }}>
-            <label>
-              Zeit von:
-              <input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                style={{ marginLeft: 8 }}
-              />
-            </label>
-            <label>
-              Zeit bis:
-              <input
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                style={{ marginLeft: 8 }}
-              />
-            </label>
-          </div>
-
-          <label>
-            Slot-Minuten:
-            <input
-              type="number"
-              min={5}
-              step={5}
-              value={slotMinutes}
-              onChange={(e) => setSlotMinutes(Number(e.target.value))}
-              style={{ marginLeft: 8, width: 100 }}
-            />
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              checked={aktiv}
-              onChange={(e) => setAktiv(e.target.checked)}
-            />{" "}
-            Regel ist aktiv
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              checked={alleBahnen}
-              onChange={(e) => setAlleBahnen(e.target.checked)}
-            />{" "}
-            Für alle Bahnen
-          </label>
-
-          {!alleBahnen && !loading && (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
+          <div className="p-6 space-y-5">
             <div>
-              <strong>Bahnen:</strong>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 8 }}>
-                {bahnen.map((b) => (
-                  <label key={b.id}>
-                    <input
-                      type="checkbox"
-                      checked={bahnIds.includes(b.id)}
-                      onChange={() => toggleBahn(b.id)}
-                    />{" "}
-                    {b.nummer ?? "?"} – {b.name ?? ""}
-                  </label>
-                ))}
+              <label className={lbl}>Wochentag</label>
+              <select value={weekday} onChange={(e) => setWeekday(Number(e.target.value))} className={inp}>
+                <option value={0}>Sonntag</option>
+                <option value={1}>Montag</option>
+                <option value={2}>Dienstag</option>
+                <option value={3}>Mittwoch</option>
+                <option value={4}>Donnerstag</option>
+                <option value={5}>Freitag</option>
+                <option value={6}>Samstag</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className={lbl}>Zeit von</label>
+                <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className={inp} />
+              </div>
+              <div>
+                <label className={lbl}>Zeit bis</label>
+                <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className={inp} />
+              </div>
+              <div>
+                <label className={lbl}>Slot-Minuten</label>
+                <input type="number" min={5} step={5} value={slotMinutes} onChange={(e) => setSlotMinutes(Number(e.target.value))} className={inp} />
               </div>
             </div>
-          )}
 
-          <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
+            <div className="flex gap-6">
+              <label className="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" checked={aktiv} onChange={(e) => setAktiv(e.target.checked)} className="rounded" />
+                Regel ist aktiv
+              </label>
+              <label className="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" checked={alleBahnen} onChange={(e) => setAlleBahnen(e.target.checked)} className="rounded" />
+                Fur alle Bahnen
+              </label>
+            </div>
+
+            {!alleBahnen && !loading && (
+              <div>
+                <p className={lbl}>Bahnen auswahlen</p>
+                <div className="flex flex-wrap gap-3">
+                  {bahnen.map((b) => (
+                    <label key={b.id} className="flex items-center gap-2 text-sm text-slate-700">
+                      <input type="checkbox" checked={bahnIds.includes(b.id)} onChange={() => toggleBahn(b.id)} className="rounded" />
+                      {b.nummer ?? "?"} – {b.name ?? ""}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50 rounded-b-2xl">
             <button
               onClick={speichern}
               disabled={saving}
-              style={{
-                background: "#2563eb",
-                color: "#fff",
-                padding: "8px 16px",
-                borderRadius: 6,
-                border: "none",
-                cursor: "pointer",
-              }}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
               {saving ? "Speichern…" : "Speichern"}
             </button>
             <button
               onClick={() => router.push("/zeitregeln")}
-              style={{
-                background: "#e5e7eb",
-                padding: "8px 16px",
-                borderRadius: 6,
-                border: "none",
-                cursor: "pointer",
-              }}
+              className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors"
             >
               Abbrechen
             </button>
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

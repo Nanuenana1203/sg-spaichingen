@@ -1,14 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-
-const BASE = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY ?? "";
-
-const headers: Record<string,string> = {
-  apikey: KEY,
-  Authorization: `Bearer ${KEY}`,
-  "Content-Type": "application/json",
-};
+import { BASE, KEY, headers, requireAuth, toBool } from "../../_supabase";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -20,44 +12,49 @@ function parseId(param: string | string[] | undefined) {
 }
 
 export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) {
-  if (!BASE || !KEY) return NextResponse.json({ ok:false, where:"env" }, { status:500 });
+  const user = await requireAuth();
+  if (!user) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  if (!user.isAdmin) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+
+  if (!BASE || !KEY) return NextResponse.json({ ok: false, where: "env" }, { status: 500 });
   const { id: idParam } = await ctx.params;
   const id = parseId(idParam);
-  if (id == null) return NextResponse.json({ ok:false, error:"BAD_ID" }, { status:400 });
+  if (id == null) return NextResponse.json({ ok: false, error: "BAD_ID" }, { status: 400 });
 
   const url = `${BASE}/rest/v1/benutzer?id=eq.${id}&select=id,name,email,istadmin`;
-  const r = await fetch(url, { headers, cache:"no-store" });
+  const r = await fetch(url, { headers, cache: "no-store" });
   const text = await r.text();
-  if (!r.ok) return NextResponse.json({ ok:false, where:"select", status:r.status, detail:text.slice(0,400) }, { status:502 });
+  if (!r.ok) return NextResponse.json({ ok: false, where: "select", status: r.status, detail: text.slice(0, 400) }, { status: 502 });
 
-  let rows: any[] = [];
+  let rows: unknown[] = [];
   try { rows = JSON.parse(text); } catch {}
-  const user = Array.isArray(rows) ? rows[0] : null;
-  if (!user) return NextResponse.json({ ok:false, error:"NOT_FOUND" }, { status:404 });
-  return NextResponse.json({ ok:true, user });
+  const fetchedUser = Array.isArray(rows) ? rows[0] : null;
+  if (!fetchedUser) return NextResponse.json({ ok: false, error: "NOT_FOUND" }, { status: 404 });
+  return NextResponse.json({ ok: true, user: fetchedUser });
 }
 
 export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }) {
-  if (!BASE || !KEY) return NextResponse.json({ ok:false, where:"env" }, { status:500 });
+  const user = await requireAuth();
+  if (!user) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  if (!user.isAdmin) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+
+  if (!BASE || !KEY) return NextResponse.json({ ok: false, where: "env" }, { status: 500 });
   const { id: idParam } = await ctx.params;
   const id = parseId(idParam);
-  if (id == null) return NextResponse.json({ ok:false, error:"BAD_ID" }, { status:400 });
+  if (id == null) return NextResponse.json({ ok: false, error: "BAD_ID" }, { status: 400 });
 
-  let body: any = {};
+  let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch {}
 
-  const patch: any = {};
+  const patch: Record<string, unknown> = {};
   if (typeof body.name === "string") patch.name = body.name.trim();
   if (body.email === null || typeof body.email === "string") patch.email = body.email ?? null;
-  if (typeof body.istadmin !== "undefined") patch.istadmin = !!(
-      body.istadmin === true || body.istadmin === 1 || body.istadmin === "1" ||
-      String(body.istadmin).toLowerCase() === "true" || String(body.istadmin).toLowerCase() === "t"
-  );
+  if (typeof body.istadmin !== "undefined") patch.istadmin = toBool(body.istadmin);
   if (typeof body.kennwort === "string" && body.kennwort.trim().length > 0) {
     patch.kennwort = await bcrypt.hash(body.kennwort.trim(), 10);
   }
   if (Object.keys(patch).length === 0) {
-    return NextResponse.json({ ok:false, error:"EMPTY_PATCH" }, { status:400 });
+    return NextResponse.json({ ok: false, error: "EMPTY_PATCH" }, { status: 400 });
   }
 
   const url = `${BASE}/rest/v1/benutzer?id=eq.${id}`;
@@ -68,25 +65,29 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
   });
   const text = await r.text();
   if (!r.ok) {
-    return NextResponse.json({ ok:false, where:"update", status:r.status, detail:text.slice(0,400) }, { status:502 });
+    return NextResponse.json({ ok: false, where: "update", status: r.status, detail: text.slice(0, 400) }, { status: 502 });
   }
-  let rows: any[] = [];
+  let rows: unknown[] = [];
   try { rows = JSON.parse(text); } catch {}
-  const user = Array.isArray(rows) ? rows[0] : null;
-  return NextResponse.json({ ok:true, user });
+  const updatedUser = Array.isArray(rows) ? rows[0] : null;
+  return NextResponse.json({ ok: true, user: updatedUser });
 }
 
 export async function DELETE(_: Request, ctx: { params: Promise<{ id: string }> }) {
-  if (!BASE || !KEY) return NextResponse.json({ ok:false, where:"env" }, { status:500 });
+  const user = await requireAuth();
+  if (!user) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  if (!user.isAdmin) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+
+  if (!BASE || !KEY) return NextResponse.json({ ok: false, where: "env" }, { status: 500 });
   const { id: idParam } = await ctx.params;
   const id = parseId(idParam);
-  if (id == null) return NextResponse.json({ ok:false, error:"BAD_ID" }, { status:400 });
+  if (id == null) return NextResponse.json({ ok: false, error: "BAD_ID" }, { status: 400 });
 
   const url = `${BASE}/rest/v1/benutzer?id=eq.${id}`;
-  const r = await fetch(url, { method:"DELETE", headers });
+  const r = await fetch(url, { method: "DELETE", headers });
   if (!r.ok) {
     const text = await r.text();
-    return NextResponse.json({ ok:false, where:"delete", status:r.status, detail:text.slice(0,400) }, { status:502 });
+    return NextResponse.json({ ok: false, where: "delete", status: r.status, detail: text.slice(0, 400) }, { status: 502 });
   }
-  return NextResponse.json({ ok:true });
+  return NextResponse.json({ ok: true });
 }

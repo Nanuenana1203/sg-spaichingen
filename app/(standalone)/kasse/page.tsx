@@ -222,7 +222,7 @@ export default function KassePage() {
         <button
           key={a.id}
           onClick={() => addArtikel(a)}
-          className="rounded-md border border-gray-300 px-1.5 py-1 text-left shadow-sm hover:border-indigo-400 hover:shadow-md transition bg-gray-100 w-full h-14 flex items-center justify-center"
+          className="rounded-xl border border-slate-200 px-2 py-1 text-left shadow-sm hover:border-blue-400 hover:shadow-md transition bg-slate-50 hover:bg-white w-full h-14 flex items-center justify-center"
           title="Zum Warenkorb hinzufügen"
         >
           <div className="text-sm leading-tight break-words line-clamp-2">
@@ -235,19 +235,20 @@ export default function KassePage() {
   }, [kachelArtikel, auswahl]);
 
   return (
-    <div className={"p-6 space-y-6 min-h-screen " + (isStorno ? "bg-red-100" : "")}>
+    <div className={"min-h-screen " + (isStorno ? "bg-red-50" : "bg-slate-50")}>
+    <div className={"p-6 space-y-5 max-w-7xl mx-auto"}>
       {/* Kopf */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-semibold">Kasse</h1>
-        <div className="flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-slate-900">Kasse</h1>
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => setIsStorno((v) => !v)}
-            className={"px-4 py-2 rounded-lg text-sm font-semibold transition " + (isStorno ? "bg-red-600 text-white hover:bg-red-700" : "bg-red-200 text-red-900 hover:bg-red-300")}
+            className={"px-4 py-2 rounded-lg text-sm font-medium transition-colors " + (isStorno ? "bg-red-600 text-white hover:bg-red-700" : "bg-red-100 text-red-700 hover:bg-red-200")}
           >
             Storno
           </button>
-          <a href="/dashboard" className="px-4 py-2 border rounded-lg hover:bg-gray-50 text-sm">
+          <a href="/dashboard" className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors">
             Zurück
           </a>
         </div>
@@ -255,51 +256,48 @@ export default function KassePage() {
 
       {/* Mitglied wählen */}
       {!auswahl ? (
-        <div className="rounded-xl border bg-white p-4">
-          <div className="text-sm font-semibold text-gray-700 mb-2">Kunde auswählen</div>
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-5">
+          <p className="text-sm font-medium text-slate-700 mb-2">Kunde auswahlen</p>
           <input
-            className="border rounded-lg px-3 py-2 w-96 focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full max-w-sm px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Mitglied suchen (mind. 3 Zeichen)…"
             value={queryMitglied}
             onChange={(e) => setQueryMitglied(e.target.value)}
           />
           {queryMitglied.length >= 3 && (
-            <div className="mt-3 overflow-x-auto rounded-lg border">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
+            <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200">
+              <table className="min-w-full text-sm">
+                <thead className="bg-slate-50">
                   <tr>
-                    <th className="px-4 py-2">Nr.</th>
-                    <th className="px-4 py-2">Name</th>
-                    <th className="px-4 py-2">Ort</th>
-                    <th className="px-4 py-2">Ausweisnr.</th>
-                    <th className="px-4 py-2">Gruppe</th>
-                    <th className="px-4 py-2 text-right">Aktion</th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Nr.</th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Name</th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Ort</th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Ausweisnr.</th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Gruppe</th>
+                    <th className="px-4 py-2"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredMitglieder.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-4 py-3 text-center text-gray-500">
+                      <td colSpan={6} className="px-4 py-3 text-center text-slate-400 text-sm">
                         Keine Mitglieder gefunden.
                       </td>
                     </tr>
                   )}
                   {filteredMitglieder.map((m) => (
-                    <tr key={m.id} className="border-t hover:bg-blue-50">
-                      <td className="px-4 py-2">{m.mitgliedsnr}</td>
-                      <td className="px-4 py-2">{m.name}</td>
-                      <td className="px-4 py-2">{m.ort}</td>
-                      <td className="px-4 py-2">{m.ausweisnr}</td>
-                      <td className="px-4 py-2">{m.preisgruppe}</td>
+                    <tr key={m.id} className="border-t border-slate-100 hover:bg-slate-50">
+                      <td className="px-4 py-2 text-slate-700">{m.mitgliedsnr}</td>
+                      <td className="px-4 py-2 text-slate-700">{m.name}</td>
+                      <td className="px-4 py-2 text-slate-700">{m.ort}</td>
+                      <td className="px-4 py-2 text-slate-700">{m.ausweisnr}</td>
+                      <td className="px-4 py-2 text-slate-700">{m.preisgruppe}</td>
                       <td className="px-4 py-2 text-right">
                         <button
-                          onClick={() => {
-                            setKorb([]);
-                            setAuswahl(m);
-                          }}
-                          className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                          onClick={() => { setKorb([]); setAuswahl(m); }}
+                          className="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors"
                         >
-                          Übernehmen
+                          Ubernehmen
                         </button>
                       </td>
                     </tr>
@@ -310,19 +308,16 @@ export default function KassePage() {
           )}
         </div>
       ) : (
-        <div className="rounded-xl border bg-white p-4">
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4">
           <div className="flex items-center gap-3">
-            <div className="text-base">
+            <div className="text-sm text-slate-700">
               <strong>{auswahl.name}</strong>
-              {auswahl.ort ? <> ({auswahl.ort})</> : null} – Preisgruppe:{' '}
+              {auswahl.ort ? <> ({auswahl.ort})</> : null}{' – Preisgruppe: '}
               {auswahl.preisgruppe ?? '–'}
             </div>
             <button
-              onClick={() => {
-                setKorb([]);
-                setAuswahl(null);
-              }}
-              className="ml-auto px-3 py-2 rounded-lg text-sm bg-blue-600 text-white hover:bg-blue-700"
+              onClick={() => { setKorb([]); setAuswahl(null); }}
+              className="ml-auto px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
             >
               Mitglied wechseln
             </button>
@@ -331,66 +326,47 @@ export default function KassePage() {
       )}
 
       {/* Unterer Bereich */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-        {/* Linke Spalte: Kacheln (oben) + Artikelsuche (darunter) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-start">
+        {/* Linke Spalte: Kacheln + Artikelsuche */}
         <div className="md:col-span-2 space-y-4">
-          {/* Schnellzugriff-Kacheln */}
-          <div
-            className={`rounded-xl border bg-white p-4 ${
-              !auswahl ? 'opacity-50 pointer-events-none select-none' : ''
-            }`}
-          >
+          <div className={`rounded-2xl border border-slate-200 bg-white shadow-sm p-4 ${!auswahl ? 'opacity-50 pointer-events-none select-none' : ''}`}>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
               {kachelRows}
               {kachelArtikel.length === 0 && (
-                <div className="col-span-full text-sm text-gray-500">
-                  Keine Artikel-Kacheln konfiguriert.
-                </div>
+                <div className="col-span-full text-sm text-slate-400">Keine Artikel-Kacheln konfiguriert.</div>
               )}
             </div>
           </div>
 
-          {/* Artikelsuche (unter den Kacheln) */}
-          <div
-            className={`rounded-xl border bg-white p-4 ${
-              !auswahl ? 'opacity-50 pointer-events-none select-none' : ''
-            }`}
-          >
-            <div className="text-sm font-semibold text-gray-700 mb-2">Artikel wählen</div>
+          <div className={`rounded-2xl border border-slate-200 bg-white shadow-sm p-4 ${!auswahl ? 'opacity-50 pointer-events-none select-none' : ''}`}>
+            <p className="text-sm font-medium text-slate-700 mb-2">Artikel wahlen</p>
             <input
-              className="border rounded-lg px-3 py-2 w-full md:w-2/3 lg:w-1/2 focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full max-w-sm px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Artikel suchen (mind. 3 Zeichen)…"
               value={queryArtikel}
               onChange={(e) => setQueryArtikel(e.target.value)}
             />
             {queryArtikel.length >= 3 && (
-              <div className="mt-3 overflow-x-auto rounded-lg border">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50">
+              <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-slate-50">
                     <tr>
-                      <th className="px-4 py-2">Art.-Nr.</th>
-                      <th className="px-4 py-2">Bezeichnung</th>
-                      <th className="px-4 py-2 text-right">Aktion</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Art.-Nr.</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Bezeichnung</th>
+                      <th className="px-4 py-2"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredArtikel.length === 0 && (
-                      <tr>
-                        <td colSpan={3} className="px-4 py-3 text-center text-gray-500">
-                          Keine Artikel gefunden.
-                        </td>
-                      </tr>
+                      <tr><td colSpan={3} className="px-4 py-3 text-center text-slate-400 text-sm">Keine Artikel gefunden.</td></tr>
                     )}
                     {filteredArtikel.map((a) => (
-                      <tr key={a.id} className="border-t hover:bg-blue-50">
-                        <td className="px-4 py-2">{a.artnr ?? ''}</td>
-                        <td className="px-4 py-2">{a.bezeichnung}</td>
+                      <tr key={a.id} className="border-t border-slate-100 hover:bg-slate-50">
+                        <td className="px-4 py-2 text-slate-700">{a.artnr ?? ''}</td>
+                        <td className="px-4 py-2 text-slate-700">{a.bezeichnung}</td>
                         <td className="px-4 py-2 text-right">
-                          <button
-                            onClick={() => addArtikel(a)}
-                            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 border border-gray-300 shadow-sm hover:shadow-md"
-                          >
-                            Übernehmen
+                          <button onClick={() => addArtikel(a)} className="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors">
+                            Ubernehmen
                           </button>
                         </td>
                       </tr>
@@ -403,50 +379,31 @@ export default function KassePage() {
         </div>
 
         {/* Rechte Spalte: Warenkorb */}
-        <div className="md:col-span-1 rounded-xl border bg-white p-4">
-          <h2 className="font-semibold mb-2">Warenkorb</h2>
+        <div className="md:col-span-1 rounded-2xl border border-slate-200 bg-white shadow-sm p-4">
+          <h2 className="text-sm font-semibold text-slate-900 mb-3">Warenkorb</h2>
           {!auswahl ? (
-            <p className="text-sm text-gray-500">Noch kein Mitglied gewählt.</p>
+            <p className="text-sm text-slate-400">Noch kein Mitglied gewahlt.</p>
           ) : korb.length === 0 ? (
-            <p className="text-sm text-gray-500">Noch keine Positionen.</p>
+            <p className="text-sm text-slate-400">Noch keine Positionen.</p>
           ) : (
             <div className="space-y-2">
               {korb.map((p) => (
-                <div
-                  key={p.key}
-                  className="flex items-center justify-between border rounded-lg px-3 py-2"
-                >
-                  <div className="min-w-0">
-                    <div className="font-medium text-sm truncate">{p.bezeichnung}</div>
-                    <div className="text-xs text-gray-600">{fmt(isStorno ? -Math.abs(p.einzelpreis) : p.einzelpreis)}</div>
+                <div key={p.key} className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium text-slate-800 truncate">{p.bezeichnung}</div>
+                    <div className="text-xs text-slate-500">{fmt(isStorno ? -Math.abs(p.einzelpreis) : p.einzelpreis)}</div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      className="border rounded px-2 py-1"
-                      onClick={() => menge(p.key, -1)}
-                    >
-                      -
-                    </button>
-                    <span className="min-w-6 text-center">{p.menge}</span>
-                    <button
-                      className="border rounded px-2 py-1"
-                      onClick={() => menge(p.key, 1)}
-                    >
-                      +
-                    </button>
-                    <button
-                      className="border rounded px-2 py-1"
-                      onClick={() => menge(p.key, -999)}
-                      title="Entfernen"
-                    >
-                      🗑️
-                    </button>
+                  <div className="flex items-center gap-1 ml-2">
+                    <button className="w-7 h-7 rounded border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm" onClick={() => menge(p.key, -1)}>-</button>
+                    <span className="w-6 text-center text-sm">{p.menge}</span>
+                    <button className="w-7 h-7 rounded border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm" onClick={() => menge(p.key, 1)}>+</button>
+                    <button className="w-7 h-7 rounded border border-slate-200 text-slate-400 hover:text-red-500 hover:bg-red-50 text-sm" onClick={() => menge(p.key, -999)} title="Entfernen">×</button>
                   </div>
                 </div>
               ))}
             </div>
           )}
-          <div className="mt-3 flex items-center justify-between font-semibold border-t pt-3">
+          <div className="mt-3 flex items-center justify-between font-semibold border-t border-slate-100 pt-3 text-slate-900">
             <span>Summe</span>
             <span>{fmt(isStorno ? -Math.abs(summe) : summe)}</span>
           </div>
@@ -454,12 +411,13 @@ export default function KassePage() {
           <button
             onClick={handleBuchen}
             disabled={!auswahl || korb.length === 0}
-            className="mt-4 w-full bg-green-600 text-white px-6 py-3 rounded-lg text-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="mt-4 w-full bg-green-600 text-white px-4 py-3 rounded-xl text-base font-semibold hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             Buchen
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 }

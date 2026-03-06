@@ -1,18 +1,27 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const PROTECTED_PATHS = [
+  "/dashboard",
+  "/kasse",
+  "/mitglieder",
+  "/artikel",
+  "/bahnen",
+  "/benutzer",
+  "/kassenbuch",
+  "/kassenbestand",
+  "/zeitregeln",
+  "/admin",
+  "/bahnbuchung",
+];
+
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  const protectedPaths = ["/bahnen", "/zeitslots"];
+  const isProtected = PROTECTED_PATHS.some(p => pathname.startsWith(p));
+  if (!isProtected) return NextResponse.next();
 
-  if (!protectedPaths.some(p => pathname.startsWith(p))) {
-    return NextResponse.next();
-  }
-
-  // nur prüfen: eingeloggt oder nicht
-  const hasSession = req.cookies.has("sgs_session");
-
+  const hasSession = req.cookies.has("sgs_user");
   if (!hasSession) {
     const url = req.nextUrl.clone();
     url.pathname = "/";
@@ -23,5 +32,17 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/bahnen/:path*", "/zeitslots/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/kasse/:path*",
+    "/mitglieder/:path*",
+    "/artikel/:path*",
+    "/bahnen/:path*",
+    "/benutzer/:path*",
+    "/kassenbuch/:path*",
+    "/kassenbestand/:path*",
+    "/zeitregeln/:path*",
+    "/admin/:path*",
+    "/bahnbuchung/:path*",
+  ],
 };

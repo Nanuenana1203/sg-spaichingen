@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type Mitglied = {
-  id:number; mitgliedsnr:string; name:string;
-  ort?:string; preisgruppe?:string; mitglied?:boolean; gesperrt?:boolean;
+  id: number; mitgliedsnr: string; name: string;
+  ort?: string; preisgruppe?: string; mitglied?: boolean; gesperrt?: boolean;
 };
 
 export default function MitgliederPage() {
@@ -14,98 +14,107 @@ export default function MitgliederPage() {
   const router = useRouter();
 
   async function load() {
-    const res = await fetch("/api/mitglieder", { cache:"no-store" });
-    const data = await res.json().catch(()=>[]);
-    // sortiere nach Name
+    const res = await fetch("/api/mitglieder", { cache: "no-store" });
+    const data = await res.json().catch(() => []);
     const sorted = Array.isArray(data)
-      ? data.sort((a,b)=>(a.name||"").localeCompare(b.name||""))
+      ? data.sort((a, b) => (a.name || "").localeCompare(b.name || ""))
       : [];
     setRows(sorted);
   }
-  useEffect(()=>{ load(); },[]);
+  useEffect(() => { load(); }, []);
 
-  const filtered = useMemo(()=>{
+  const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
     if (!s) return rows;
     return rows.filter(m =>
-      (m.mitgliedsnr||"").toLowerCase().includes(s) ||
-      (m.name||"").toLowerCase().includes(s) ||
-      (m.ort||"").toLowerCase().includes(s)
+      (m.mitgliedsnr || "").toLowerCase().includes(s) ||
+      (m.name || "").toLowerCase().includes(s) ||
+      (m.ort || "").toLowerCase().includes(s)
     );
-  },[q, rows]);
+  }, [q, rows]);
 
-  const delItem = async(id:number) => {
-    if (!confirm("Mitglied wirklich löschen?")) return;
-    await fetch(`/api/mitglieder/${id}`, { method:"DELETE" });
+  const delItem = async (id: number) => {
+    if (!confirm("Mitglied wirklich loschen?")) return;
+    await fetch(`/api/mitglieder/${id}`, { method: "DELETE" });
     await load();
   };
 
   return (
-    <main style={{ padding:"24px" }}>
-      <div style={{ maxWidth:1100, margin:"0 auto" }}>
-        <h1 style={{ textAlign:"center", fontSize:28, fontWeight:800, marginBottom:16 }}>Mitglieder</h1>
-
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-          <div style={{ display:"flex", gap:12 }}>
-            <Link href="/mitglieder/neu"
-              style={{ background:"#3b82f6", color:"#fff", padding:"8px 14px", borderRadius:6, fontWeight:600, textDecoration:"none" }}>
-              + Neues Mitglied
+    <div className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-6xl px-6 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-slate-900">Kunden</h1>
+          <div className="flex items-center gap-3">
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Suchen nach Nr., Name, Ort..."
+              className="w-64 px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <Link
+              href="/mitglieder/neu"
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
+            >
+              + Neuer Kunde
             </Link>
-            <button onClick={()=>router.push("/dashboard")}
-              style={{ background:"#e5e7eb", padding:"8px 14px", borderRadius:6, fontWeight:600, border:"none", cursor:"pointer" }}>
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors"
+            >
               Zurück
             </button>
           </div>
-
-          <input value={q} onChange={(e)=>setQ(e.target.value)} placeholder="Suchen nach Nr., Name, Ort…"
-            style={{ width:320, padding:"10px 12px", border:"1px solid #e5e7eb", borderRadius:8 }} />
         </div>
 
-        <div style={{ border:"1px solid #e5e7eb", borderRadius:10, overflow:"hidden", background:"#fff" }}>
-          <table style={{ width:"100%", borderCollapse:"collapse", tableLayout:"fixed" }}>
-            <colgroup>{[<col key="c1" style={{ width:"110px" }} />,<col key="c2" style={{ width:"340px" }} />,<col key="c3" style={{ width:"220px" }} />,<col key="c4" style={{ width:"100px" }} />,<col key="c5" style={{ width:"140px" }} />,<col key="c6" style={{ width:"110px" }} />]}</colgroup>
-            <thead style={{ background:"#f9fafb" }}>
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm bg-white">
+          <table className="min-w-full text-sm">
+            <thead className="bg-slate-50">
               <tr>
-                <th style={{ padding:12, textAlign:"left" }}>Mitglieds-Nr.</th>
-                <th style={{ padding:12, textAlign:"left" }}>Name</th>
-                <th style={{ padding:12, textAlign:"left" }}>Ort</th>
-                <th style={{ padding:12, textAlign:"left" }}>Preisgruppe</th>
-                <th style={{ padding:12, textAlign:"left" }}>Status</th>
-                <th style={{ padding:12, textAlign:"left" }}>Aktionen</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Mitglieds-Nr.</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Name</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Ort</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Preisgruppe</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Aktionen</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map(m=>(
-                <tr key={m.id} style={{ borderTop:"1px solid #e5e7eb" }}>
-                  <td style={{ padding:12 }}>{m.mitgliedsnr}</td>
-                  <td style={{ padding:12, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{m.name}</td>
-                  <td style={{ padding:12 }}>{m.ort ?? "–"}</td>
-                  <td style={{ padding:12, textAlign:"right" }}>{m.preisgruppe ?? "–"}</td>
-                  <td style={{ padding:12 }}>
-                    <span style={{
-                      background: m.gesperrt ? "#fee2e2" : (m.mitglied ? "#dcfce7" : "#fef9c3"),
-                      color: m.gesperrt ? "#991b1b" : (m.mitglied ? "#166534" : "#854d0e"),
-                      padding:"4px 8px", borderRadius:6, fontSize:"0.875rem", fontWeight:600
-                    }}>
-                      {m.gesperrt ? "Gesperrt" : (m.mitglied ? "Mitglied" : "Kein Mitglied")}
+              {filtered.map(m => (
+                <tr key={m.id} className="border-t border-slate-100 hover:bg-slate-50">
+                  <td className="px-4 py-3 text-slate-700">{m.mitgliedsnr}</td>
+                  <td className="px-4 py-3 text-slate-700 max-w-xs truncate">{m.name}</td>
+                  <td className="px-4 py-3 text-slate-700">{m.ort ?? "–"}</td>
+                  <td className="px-4 py-3 text-slate-700 text-right">{m.preisgruppe ?? "–"}</td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${
+                      m.gesperrt
+                        ? "bg-red-100 text-red-700"
+                        : m.mitglied
+                          ? "bg-green-100 text-green-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}>
+                      {m.gesperrt ? "Gesperrt" : m.mitglied ? "Mitglied" : "Kein Mitglied"}
                     </span>
                   </td>
-                  <td style={{ padding:12 }}>
-                    <div style={{ display:"flex", gap:20, alignItems:"center" }}>
-                      <Link href={`/mitglieder/${m.id}`} title="Bearbeiten" style={{ textDecoration:"none" }}>✏️</Link>
-                      <button title="Löschen" onClick={()=>delItem(m.id)}
-                        style={{ background:"transparent", border:"none", cursor:"pointer" }}>🗑️</button>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <Link href={`/mitglieder/${m.id}`} title="Bearbeiten" className="text-slate-500 hover:text-blue-600 transition-colors text-base leading-none">✏️</Link>
+                      <button onClick={() => delItem(m.id)} title="Löschen" className="text-slate-500 hover:text-red-600 transition-colors text-base leading-none">🗑️</button>
                     </div>
                   </td>
                 </tr>
               ))}
               {!filtered.length && (
-                <tr><td colSpan={6} style={{ padding:16, color:"#6b7280" }}>Keine Mitglieder gefunden.</td></tr>
+                <tr>
+                  <td colSpan={6} className="px-4 py-6 text-center text-slate-400 text-sm">
+                    Keine Mitglieder gefunden.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

@@ -3,12 +3,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 type Mitglied = {
-  id: number;
-  mitgliedsnr: string | null;
-  name: string | null;
-  ort: string | null;
-  ausweisnr: string | null;
-  preisgruppe: number | null;
+  id: number; mitgliedsnr: string | null; name: string | null;
+  ort: string | null; ausweisnr: string | null; preisgruppe: number | null;
 };
 
 type Buchung = {
@@ -22,37 +18,23 @@ type Buchung = {
   benutzer_name: string | null;
 };
 
-// Hilfsfunktionen wie in Kasse
 const norm = (v: unknown) => (v ?? "").toString().trim().toLowerCase();
-const fmt2 = (n: number | null | undefined) =>
-  (n ?? 0).toFixed(2).replace(".", ",");
+const fmt2 = (n: number | null | undefined) => (n ?? 0).toFixed(2).replace(".", ",");
 
-// Zeitraum-Voreinstellung: 01.01. aktuelles Jahr bis heute
-function janFirstISO() {
-  const d = new Date();
-  return `${d.getFullYear()}-01-01`;
-}
-function todayISO() {
-  const d = new Date();
-  const z = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
-}
+function janFirstISO() { const d = new Date(); return `${d.getFullYear()}-01-01`; }
+function todayISO() { const d = new Date(); const z = (n: number) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`; }
+
+const inp = "w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 
 export default function KassenbuchPage() {
-  // --- Mitgliederauswahl EXAKT wie in Kasse ---
   const [mitglieder, setMitglieder] = useState<Mitglied[]>([]);
   const [queryMitglied, setQueryMitglied] = useState("");
   const [auswahl, setAuswahl] = useState<Mitglied | null>(null);
-
-  // Zeitraum
   const [from, setFrom] = useState(janFirstISO());
   const [to, setTo] = useState(todayISO());
-
-  // Daten
   const [rows, setRows] = useState<Buchung[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Laden wie in Kasse (api/mitglieder)
   useEffect(() => {
     (async () => {
       try {
@@ -63,22 +45,14 @@ export default function KassenbuchPage() {
     })();
   }, []);
 
-  // Filter Mitglied (wie Kasse)
   const filteredMitglieder = useMemo(() => {
     const n = norm(queryMitglied);
     if (n.length < 3) return [];
     return mitglieder
-      .filter(
-        (m) =>
-          norm(m.name).includes(n) ||
-          norm(m.ort).includes(n) ||
-          norm(m.ausweisnr).includes(n) ||
-          norm(m.mitgliedsnr).includes(n)
-      )
+      .filter(m => norm(m.name).includes(n) || norm(m.ort).includes(n) || norm(m.ausweisnr).includes(n) || norm(m.mitgliedsnr).includes(n))
       .sort((a, b) => norm(a.name).localeCompare(norm(b.name)));
   }, [mitglieder, queryMitglied]);
 
-  // Daten laden
   async function loadData() {
     setLoading(true);
     try {
@@ -97,200 +71,146 @@ export default function KassenbuchPage() {
     }
   }
 
-  const cols = useMemo(
-    () => ["Datum", "Artikel", "Bezeichnung", "Menge", "EP (€)", "GP (€)", "Mitglied", "Benutzer"],
-    []
-  );
+  const cols = useMemo(() => ["Datum", "Artikel", "Bezeichnung", "Menge", "EP (€)", "GP (€)", "Mitglied", "Benutzer"], []);
 
   function exportCSV() {
     const head = cols.join(";");
-    const body = rows.map((r) =>
-      [
-        new Date(r.datum).toLocaleDateString("de-DE"),
-        r.artikel_nummer ?? "",
-        r.artikel_bezeichnung ?? "",
-        r.menge ?? "",
-        fmt2(r.einzelpreis),
-        fmt2(r.gesamtpreis),
-        r.mitglied_name ?? "",
-        r.benutzer_name ?? "",
-      ].join(";")
-    );
+    const body = rows.map(r => [
+      new Date(r.datum).toLocaleDateString("de-DE"),
+      r.artikel_nummer ?? "", r.artikel_bezeichnung ?? "",
+      r.menge ?? "", fmt2(r.einzelpreis), fmt2(r.gesamtpreis),
+      r.mitglied_name ?? "", r.benutzer_name ?? "",
+    ].join(";"));
     const csv = [head, ...body].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = `kassenbuch_${from}_bis_${to}.csv`;
-    a.click();
+    a.href = url; a.download = `kassenbuch_${from}_bis_${to}.csv`; a.click();
     URL.revokeObjectURL(url);
   }
 
   return (
-    <main className="p-6 flex flex-col items-center bg-gray-50 min-h-screen">
-      <div className="relative bg-white p-6 rounded-2xl shadow w-full max-w-6xl">
-        {/* Zurück oben rechts */}
-        <Link
-          href="/dashboard"
-          className="absolute right-6 top-6 px-4 py-2 rounded bg-slate-200 hover:bg-slate-300 text-slate-800"
-        >
-          Zurück
-        </Link>
+    <div className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-6xl px-6 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-slate-900">Kassenbuch</h1>
+          <Link href="/dashboard" className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors">
+            Zurück
+          </Link>
+        </div>
 
-        <h1 className="text-2xl font-semibold mb-6 text-center">📘 Kassenbuch</h1>
-
-        {/* Mitglied wählen – 1:1 wie in Kasse (Tabelle nach Suche) */}
-        {!auswahl ? (
-          <div className="rounded-xl border bg-white p-4 mb-5">
-            <div className="text-sm font-semibold text-gray-700 mb-2 text-center">Mitglied auswählen</div>
-            <div className="flex justify-center">
+        {/* Mitglied */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-5">
+          {!auswahl ? (
+            <>
+              <p className="text-sm font-medium text-slate-700 mb-2">Mitglied auswahlen (optional)</p>
               <input
-                className="border rounded-lg px-3 py-2 w-96 focus:ring-2 focus:ring-blue-500 outline-none"
+                className={inp}
                 placeholder="Mitglied suchen (mind. 3 Zeichen)…"
                 value={queryMitglied}
                 onChange={(e) => setQueryMitglied(e.target.value)}
               />
-            </div>
-            {queryMitglied.length >= 3 && (
-              <div className="mt-3 overflow-x-auto rounded-lg border">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-2">Nr.</th>
-                      <th className="px-4 py-2">Name</th>
-                      <th className="px-4 py-2">Ort</th>
-                      <th className="px-4 py-2">Ausweisnr.</th>
-                      <th className="px-4 py-2">Gruppe</th>
-                      <th className="px-4 py-2 text-right">Aktion</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredMitglieder.length === 0 && (
+              {queryMitglied.length >= 3 && (
+                <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-slate-50">
                       <tr>
-                        <td colSpan={6} className="px-4 py-3 text-center text-gray-500">
-                          Keine Mitglieder gefunden.
-                        </td>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Nr.</th>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Name</th>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Ort</th>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Ausweis</th>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Gruppe</th>
+                        <th className="px-4 py-2"></th>
                       </tr>
-                    )}
-                    {filteredMitglieder.map((m) => (
-                      <tr key={m.id} className="border-t hover:bg-blue-50">
-                        <td className="px-4 py-2">{m.mitgliedsnr}</td>
-                        <td className="px-4 py-2">{m.name}</td>
-                        <td className="px-4 py-2">{m.ort}</td>
-                        <td className="px-4 py-2">{m.ausweisnr}</td>
-                        <td className="px-4 py-2">{m.preisgruppe}</td>
-                        <td className="px-4 py-2 text-right">
-                          <button
-                            onClick={() => {
-                              setAuswahl(m);
-                            }}
-                            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-                          >
-                            Übernehmen
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="rounded-xl border bg-white p-4 mb-5">
+                    </thead>
+                    <tbody>
+                      {filteredMitglieder.length === 0 && (
+                        <tr><td colSpan={6} className="px-4 py-3 text-center text-slate-400 text-sm">Keine Mitglieder gefunden.</td></tr>
+                      )}
+                      {filteredMitglieder.map((m) => (
+                        <tr key={m.id} className="border-t border-slate-100 hover:bg-slate-50">
+                          <td className="px-4 py-2 text-slate-700">{m.mitgliedsnr}</td>
+                          <td className="px-4 py-2 text-slate-700">{m.name}</td>
+                          <td className="px-4 py-2 text-slate-700">{m.ort}</td>
+                          <td className="px-4 py-2 text-slate-700">{m.ausweisnr}</td>
+                          <td className="px-4 py-2 text-slate-700">{m.preisgruppe}</td>
+                          <td className="px-4 py-2 text-right">
+                            <button onClick={() => setAuswahl(m)} className="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors">
+                              Ubernehmen
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          ) : (
             <div className="flex items-center gap-3">
-              <div className="text-base">
+              <div className="text-sm text-slate-700">
                 <strong>{auswahl.name}</strong>
-                {auswahl.ort ? <> ({auswahl.ort})</> : null} – Preisgruppe:{" "}
-                {auswahl.preisgruppe ?? "–"}
+                {auswahl.ort ? <> ({auswahl.ort})</> : null}
+                {" – Preisgruppe: "}{auswahl.preisgruppe ?? "–"}
               </div>
               <button
-                onClick={() => {
-                  setAuswahl(null);
-                  setQueryMitglied("");
-                }}
-                className="ml-auto px-3 py-2 rounded-lg text-sm bg-blue-600 text-white hover:bg-blue-700"
+                onClick={() => { setAuswahl(null); setQueryMitglied(""); }}
+                className="ml-auto px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors"
               >
                 Mitglied wechseln
               </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Zeitraum + Buttons rechts */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 items-end">
-          <div>
-            <label className="block text-sm font-medium mb-1 text-center md:text-left">Von</label>
-            <input
-              type="date"
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-              className="w-48 border rounded px-2 py-1 text-center"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-center md:text-left">Bis</label>
-            <input
-              type="date"
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
-              className="w-48 border rounded px-2 py-1 text-center"
-            />
-          </div>
-          <div className="md:col-span-3 flex justify-end gap-3">
-            <button
-              onClick={loadData}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              Anzeigen
-            </button>
-            <button
-              onClick={exportCSV}
-              className="px-4 py-2 rounded border border-slate-300 hover:bg-slate-50"
-            >
-              Exportieren (CSV)
-            </button>
+        {/* Filter + Buttons */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-5">
+          <div className="flex flex-wrap items-end gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Von</label>
+              <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Bis</label>
+              <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div className="flex gap-3 ml-auto">
+              <button onClick={loadData} className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors">
+                Anzeigen
+              </button>
+              <button onClick={exportCSV} className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors">
+                Exportieren (CSV)
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Tabelle */}
-        <div className="overflow-x-auto rounded border">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="bg-gray-100 text-left">
-                {cols.map((c) => (
-                  <th key={c} className="border p-2">
-                    {c}
-                  </th>
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm bg-white">
+          <table className="min-w-full text-sm">
+            <thead className="bg-slate-50">
+              <tr>
+                {cols.map(c => (
+                  <th key={c} className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{c}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={cols.length} className="p-3 text-center">
-                    Lade…
-                  </td>
-                </tr>
+                <tr><td colSpan={cols.length} className="px-4 py-6 text-center text-slate-400 text-sm">Lade…</td></tr>
               ) : rows.length === 0 ? (
-                <tr>
-                  <td colSpan={cols.length} className="p-3 text-center text-gray-500">
-                    Keine Buchungen gefunden
-                  </td>
-                </tr>
+                <tr><td colSpan={cols.length} className="px-4 py-6 text-center text-slate-400 text-sm">Keine Buchungen gefunden</td></tr>
               ) : (
                 rows.map((r, i) => (
-                  <tr key={i} className="even:bg-gray-50">
-                    <td className="border p-2">
-                      {new Date(r.datum).toLocaleDateString("de-DE")}
-                    </td>
-                    <td className="border p-2">{r.artikel_nummer}</td>
-                    <td className="border p-2">{r.artikel_bezeichnung}</td>
-                    <td className="border p-2 text-right">{r.menge}</td>
-                    <td className="border p-2 text-right">{fmt2(r.einzelpreis)}</td>
-                    <td className="border p-2 text-right">{fmt2(r.gesamtpreis)}</td>
-                    <td className="border p-2">{r.mitglied_name}</td>
-                    <td className="border p-2">{r.benutzer_name}</td>
+                  <tr key={i} className="border-t border-slate-100 even:bg-slate-50/50">
+                    <td className="px-4 py-3 text-slate-700">{new Date(r.datum).toLocaleDateString("de-DE")}</td>
+                    <td className="px-4 py-3 text-slate-700">{r.artikel_nummer}</td>
+                    <td className="px-4 py-3 text-slate-700">{r.artikel_bezeichnung}</td>
+                    <td className="px-4 py-3 text-slate-700 text-right">{r.menge}</td>
+                    <td className="px-4 py-3 text-slate-700 text-right">{fmt2(r.einzelpreis)}</td>
+                    <td className="px-4 py-3 text-slate-700 text-right">{fmt2(r.gesamtpreis)}</td>
+                    <td className="px-4 py-3 text-slate-700">{r.mitglied_name}</td>
+                    <td className="px-4 py-3 text-slate-700">{r.benutzer_name}</td>
                   </tr>
                 ))
               )}
@@ -298,6 +218,6 @@ export default function KassenbuchPage() {
           </table>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

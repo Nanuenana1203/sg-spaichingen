@@ -1,28 +1,27 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { BASE, KEY, headers, requireAuth } from "../_supabase";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function GET() {
-  try {
-    const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+  const user = await requireAuth();
+  if (!user) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return NextResponse.json(
-        { ok: false, message: "Missing Supabase environment variables" },
-        { status: 500 }
-      );
-    }
-
-    const { data, error } = await supabase.from("kasse").select("*").limit(10);
-    if (error) throw error;
-
-    return NextResponse.json({ ok: true, data });
-  } catch (err: any) {
-    return NextResponse.json(
-      { ok: false, message: err.message || "Unknown error" },
-      { status: 500 }
-    );
+  if (!BASE || !KEY) {
+    return NextResponse.json({ ok: false, message: "Missing Supabase environment variables" }, { status: 500 });
   }
+
+  const url = `${BASE}/rest/v1/kasse?select=*&limit=10&order=id.desc`;
+  const r = await fetch(url, { headers, cache: "no-store" });
+  const text = await r.text();
+
+  if (!r.ok) {
+    return NextResponse.json({ ok: false, message: "Upstream error" }, { status: 502 });
+  }
+
+  let data: unknown[] = [];
+  try { data = JSON.parse(text); } catch {}
+
+  return NextResponse.json({ ok: true, data });
 }

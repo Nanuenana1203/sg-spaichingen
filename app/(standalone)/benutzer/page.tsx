@@ -10,13 +10,8 @@ type UserRow = { id: number; name: string; email?: string | null; istadmin?: any
 
 function asAdmin(value: any): boolean {
   return (
-    value === true ||
-    value === 1 ||
-    value === "1" ||
-    value === "true" ||
-    value === "TRUE" ||
-    value === "t" ||
-    value === "T"
+    value === true || value === 1 || value === "1" || value === "true" ||
+    value === "TRUE" || value === "t" || value === "T"
   );
 }
 
@@ -41,9 +36,7 @@ export default function BenutzerPage() {
     setGate("ok");
   }
 
-  useEffect(() => {
-    load().catch(() => setGate("no-session"));
-  }, []);
+  useEffect(() => { load().catch(() => setGate("no-session")); }, []);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -54,113 +47,97 @@ export default function BenutzerPage() {
   }, [rows, q]);
 
   async function delUser(id: number) {
-    if (!confirm("Benutzer wirklich löschen?")) return;
+    if (!confirm("Benutzer wirklich loschen?")) return;
     const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
-    if (!res.ok) {
-      alert("Löschen fehlgeschlagen.");
-      return;
-    }
+    if (!res.ok) { alert("Loschen fehlgeschlagen."); return; }
     setRows((prev) => prev.filter((x) => x.id !== id));
   }
 
   if (gate !== "ok") {
-    const title =
-      gate === "loading" ? "Lade …" : gate === "no-session" ? "Nicht angemeldet" : "Kein Zugriff";
-    const msg =
-      gate === "loading"
-        ? ""
-        : gate === "no-session"
-          ? "Bitte zuerst einloggen, um die Benutzerverwaltung zu öffnen."
-          : "Für die Benutzerverwaltung ist Admin-Recht erforderlich.";
+    const title = gate === "loading" ? "Lade…" : gate === "no-session" ? "Nicht angemeldet" : "Kein Zugriff";
+    const msg = gate === "loading" ? "" : gate === "no-session"
+      ? "Bitte zuerst einloggen, um die Benutzerverwaltung zu offnen."
+      : "Fur die Benutzerverwaltung ist Admin-Recht erforderlich.";
     const btnHref = gate === "no-session" ? "/" : "/dashboard";
     const btnText = gate === "no-session" ? "Zur Anmeldung" : "Zum Dashboard";
     return (
-      <div className="p-8 max-w-xl mx-auto text-center space-y-4">
-        <h1 className="text-2xl font-semibold">{title}</h1>
-        {msg && <p>{msg}</p>}
-        {gate !== "loading" && (
-          <Link href={btnHref} className="inline-block px-4 py-2 rounded bg-slate-800 text-white">
-            {btnText}
-          </Link>
-        )}
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-md w-full text-center space-y-4">
+          <h1 className="text-xl font-bold text-slate-900">{title}</h1>
+          {msg && <p className="text-sm text-slate-600">{msg}</p>}
+          {gate !== "loading" && (
+            <Link href={btnHref} className="inline-flex px-4 py-2 rounded-lg bg-slate-800 text-white text-sm font-medium hover:bg-slate-700 transition-colors">
+              {btnText}
+            </Link>
+          )}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-semibold text-center text-slate-800 mb-6">Benutzer</h1>
-
-      <div className="mb-6 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Link
-            href="/benutzer/neu"
-            className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition"
-          >
-            + Neuer Benutzer
-          </Link>
-          <Link
-            href="/dashboard"
-            className="px-4 py-2 rounded-md bg-slate-200 hover:bg-slate-300 text-slate-800 transition"
-          >
-            Zurück
-          </Link>
+    <div className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-6xl px-6 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-slate-900">Benutzer</h1>
+          <div className="flex items-center gap-3">
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Nach Benutzer suchen..."
+              className="w-64 px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <Link href="/benutzer/neu" className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors">
+              + Neuer Benutzer
+            </Link>
+            <Link href="/dashboard" className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors">
+              Zurück
+            </Link>
+          </div>
         </div>
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Nach Benutzer suchen…"
-          className="w-72 px-3 py-2 rounded-md border border-slate-300 outline-none focus:ring-2 focus:ring-slate-300"
-        />
-      </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm bg-white">
-        <table className="min-w-full text-sm">
-          <thead className="bg-slate-50 text-slate-700">
-            <tr>
-              <th style={{ padding: 12, textAlign: "left" }}>Name</th>
-              <th style={{ padding: 12, textAlign: "left" }}>E-Mail</th>
-              <th style={{ padding: 12, textAlign: "left" }}>Admin</th>
-              <th style={{ padding: 12, textAlign: "left" }}>Aktionen</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((u) => {
-              const isAdmin = asAdmin(u.istadmin);
-              return (
-                <tr key={u.id} style={{ borderTop: "1px solid #e5e7eb" }}>
-                  <td style={{ padding: 12 }}>{u.name}</td>
-                  <td style={{ padding: 12 }}>{u.email ?? "—"}</td>
-                  <td style={{ padding: 12 }}>{isAdmin ? "Ja" : "Nein"}</td>
-                  <td style={{ padding: 12 }}>
-  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, width: "100%" }}>
-    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-      <Link href={`/benutzer/${u.id}`} title="Bearbeiten" style={{ textDecoration: "none" }}>
-        ✏️
-      </Link>
-      <button
-        title="Löschen"
-        style={{ background: "transparent", border: "none", cursor: "pointer", padding: 0 }}
-        onClick={() => delUser(u.id)}
-      >
-        🗑️
-      </button>
-    </div>
-    {!isAdmin && <RechnerFreigebenButton benutzerId={u.id} />}
-  </div>
-</td>
-                </tr>
-              );
-            })}
-            {filtered.length === 0 && (
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm bg-white">
+          <table className="min-w-full text-sm">
+            <thead className="bg-slate-50">
               <tr>
-                <td colSpan={4} style={{ padding: 16, color: "#6b7280", textAlign: "center" }}>
-                  Keine Benutzer gefunden.
-                </td>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Name</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">E-Mail</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Admin</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Aktionen</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filtered.map((u) => {
+                const isAdmin = asAdmin(u.istadmin);
+                return (
+                  <tr key={u.id} className="border-t border-slate-100 hover:bg-slate-50">
+                    <td className="px-4 py-3 text-slate-700">{u.name}</td>
+                    <td className="px-4 py-3 text-slate-700">{u.email ?? "–"}</td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${isAdmin ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-600"}`}>
+                        {isAdmin ? "Ja" : "Nein"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <Link href={`/benutzer/${u.id}`} title="Bearbeiten" className="text-slate-500 hover:text-blue-600 transition-colors text-base leading-none">✏️</Link>
+                        <button onClick={() => delUser(u.id)} title="Löschen" className="text-slate-500 hover:text-red-600 transition-colors text-base leading-none">🗑️</button>
+                        {!isAdmin && <RechnerFreigebenButton benutzerId={u.id} />}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-4 py-6 text-center text-slate-400 text-sm">
+                    Keine Benutzer gefunden.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

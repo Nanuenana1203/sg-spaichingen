@@ -10,32 +10,44 @@ type Regel = {
   slot_minutes: number | null;
   aktiv: boolean | null;
   bahn_id: number | null;
-  bahnen?: { id:number; nummer:string|null; name:string|null } | null;
+  bahnen?: { id: number; nummer: string | null; name: string | null } | null;
 };
 
-const WDN = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
+const WDN = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
 
 function hhmm(s: string | null): string {
   if (!s) return "";
-  // "19:00:00" -> "19:00"
   const m = s.match(/^(\d{2}:\d{2})(?::\d{2})?$/);
   return m ? m[1] : s;
 }
 
-export default function EditClient({ id }: { id:number }) {
+const inp = "w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
+const lbl = "block text-sm font-medium text-slate-700 mb-1.5";
+
+export default function EditClient({ id }: { id: number }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [reg, setReg] = useState<Regel | null>(null);
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [slotMin, setSlotMin] = useState(60);
+  const [aktiv, setAktiv] = useState(true);
 
   useEffect(() => {
     let alive = true;
     (async () => {
       setLoading(true);
       try {
-        const r = await fetch(`/api/zeitregeln/${id}`, { cache:"no-store" });
-        const row = await r.json().catch(() => null);
-        if (alive) setReg(row);
+        const r = await fetch(`/api/zeitregeln/${id}`, { cache: "no-store" });
+        const row: Regel | null = await r.json().catch(() => null);
+        if (alive && row) {
+          setReg(row);
+          setStartTime(hhmm(row.start_time));
+          setEndTime(hhmm(row.end_time));
+          setSlotMin(row.slot_minutes ?? 60);
+          setAktiv(row.aktiv ?? true);
+        }
       } catch {
         alert("Zeitregel konnte nicht geladen werden.");
       } finally {
@@ -49,16 +61,10 @@ export default function EditClient({ id }: { id:number }) {
     if (!reg) return;
     setSaving(true);
     try {
-      const body = {
-        weekday: reg.weekday,
-        start_time: (document.getElementById("t_from") as HTMLInputElement)?.value || null,
-        end_time:   (document.getElementById("t_to") as HTMLInputElement)?.value || null,
-        slot_minutes: Number((document.getElementById("slot") as HTMLInputElement)?.value || "0") || null,
-        aktiv: (document.getElementById("aktiv") as HTMLInputElement)?.checked ?? true,
-      };
-      const r = await fetch(`/api/zeitregeln/${id}`, { method:"PATCH", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(body) });
+      const body = { weekday: reg.weekday, start_time: startTime || null, end_time: endTime || null, slot_minutes: slotMin || null, aktiv };
+      const r = await fetch(`/api/zeitregeln/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       if (!r.ok) throw new Error("patch");
-      router.push("/zeitregeln"); // zurück zur Tabelle
+      router.push("/zeitregeln");
     } catch {
       alert("Fehler beim Speichern.");
     } finally {
@@ -66,64 +72,72 @@ export default function EditClient({ id }: { id:number }) {
     }
   }
 
-  if (loading || !reg) {
-    return <main style={{padding:"24px"}}><div style={{maxWidth:800,margin:"0 auto"}}>Lade…</div></main>;
-  }
+  if (loading || !reg) return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <p className="text-slate-500 text-sm">Lade…</p>
+    </div>
+  );
 
   return (
-    <main style={{ padding:"24px" }}>
-      <div style={{ maxWidth:800, margin:"0 auto" }}>
-        <h1 style={{ fontSize:"28px", fontWeight:800, textAlign:"center", marginBottom:20 }}>Zeitregel bearbeiten</h1>
+    <div className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-4xl px-6 py-8">
+        <h1 className="text-2xl font-bold text-slate-900 mb-6">Zeitregel bearbeiten</h1>
 
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:12 }}>
-          <label style={{ display:"grid", gap:6 }}>
-            <span>Wochentag</span>
-            <select
-              value={reg.weekday}
-              onChange={e=>setReg({ ...reg, weekday: Number(e.target.value) })}
-              style={{ padding:"10px 12px", border:"1px solid #e5e7eb", borderRadius:8 }}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
+          <div className="p-6 space-y-5">
+            <div>
+              <label className={lbl}>Wochentag</label>
+              <select
+                value={reg.weekday}
+                onChange={e => setReg({ ...reg, weekday: Number(e.target.value) })}
+                className={inp}
+              >
+                {WDN.map((w, idx) => (<option key={idx} value={idx}>{w}</option>))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className={lbl}>Zeit von</label>
+                <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className={inp} />
+              </div>
+              <div>
+                <label className={lbl}>Zeit bis</label>
+                <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className={inp} />
+              </div>
+              <div>
+                <label className={lbl}>Slot-Minuten</label>
+                <input type="number" min={5} step={5} value={slotMin} onChange={e => setSlotMin(Number(e.target.value))} className={inp} />
+              </div>
+            </div>
+
+            <label className="flex items-center gap-2 text-sm text-slate-700">
+              <input type="checkbox" checked={aktiv} onChange={e => setAktiv(e.target.checked)} className="rounded" />
+              Regel ist aktiv
+            </label>
+
+            <div className="text-sm text-slate-500">
+              Bahn: {reg.bahn_id === null ? "Alle Bahnen" : (reg.bahnen?.nummer ? `${reg.bahnen.nummer} – ${reg.bahnen.name ?? ""}` : `#${reg.bahn_id}`)}
+            </div>
+          </div>
+
+          <div className="flex gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50 rounded-b-2xl">
+            <button
+              onClick={onSave}
+              disabled={saving}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
-              {WDN.map((w,idx)=>(<option key={idx} value={idx}>{w}</option>))}
-            </select>
-          </label>
-
-          <div />
-          <label style={{ display:"grid", gap:6 }}>
-            <span>Zeit von</span>
-            <input id="t_from" type="time" defaultValue={hhmm(reg.start_time)} style={{ padding:"10px 12px", border:"1px solid #e5e7eb", borderRadius:8 }} />
-          </label>
-          <label style={{ display:"grid", gap:6 }}>
-            <span>Zeit bis</span>
-            <input id="t_to" type="time" defaultValue={hhmm(reg.end_time)} style={{ padding:"10px 12px", border:"1px solid #e5e7eb", borderRadius:8 }} />
-          </label>
-
-          <label style={{ display:"grid", gap:6 }}>
-            <span>Slot-Minuten</span>
-            <input id="slot" type="number" min={5} step={5} defaultValue={reg.slot_minutes ?? 60} style={{ padding:"10px 12px", border:"1px solid #e5e7eb", borderRadius:8 }} />
-          </label>
-
-          <label style={{ alignSelf:"end", display:"flex", gap:10, alignItems:"center" }}>
-            <input id="aktiv" type="checkbox" defaultChecked={reg.aktiv ?? true} />
-            <span>Regel ist aktiv</span>
-          </label>
-        </div>
-
-        {/* Hinweis zur Bahn (nur anzeigen, nicht änderbar) */}
-        <div style={{ marginBottom:16, color:"#6b7280" }}>
-          Bahn: {reg.bahn_id === null ? "Alle Bahnen" : (reg.bahnen?.nummer ? `${reg.bahnen.nummer} – ${reg.bahnen.name ?? ""}` : `#${reg.bahn_id}`)}
-        </div>
-
-        <div style={{ display:"flex", gap:12 }}>
-          <button onClick={onSave} disabled={saving}
-            style={{ background:"#3b82f6", color:"#fff", padding:"10px 16px", borderRadius:8, fontWeight:700, border:"none", cursor:"pointer", opacity:saving?0.7:1 }}>
-            {saving ? "Speichern…" : "Speichern"}
-          </button>
-          <button onClick={()=>router.push("/zeitregeln")}
-            style={{ background:"#e5e7eb", padding:"10px 16px", borderRadius:8, fontWeight:600, border:"none", cursor:"pointer" }}>
-            Abbrechen
-          </button>
+              {saving ? "Speichern…" : "Speichern"}
+            </button>
+            <button
+              onClick={() => router.push("/zeitregeln")}
+              className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors"
+            >
+              Abbrechen
+            </button>
+          </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

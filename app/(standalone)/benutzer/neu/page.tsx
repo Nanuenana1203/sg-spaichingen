@@ -2,6 +2,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+const inp = "w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
+const lbl = "block text-sm font-medium text-slate-700 mb-1.5";
+
 export default function NeuerBenutzer() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -14,37 +17,20 @@ export default function NeuerBenutzer() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMsg("");
-    if (!name.trim() || !kennwort.trim()) {
-      setMsg("Name und Kennwort sind Pflichtfelder");
-      return;
-    }
+    if (!name.trim() || !kennwort.trim()) { setMsg("Name und Kennwort sind Pflichtfelder"); return; }
     setSaving(true);
     try {
       const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: name.trim(),
-          email: email.trim() ? email.trim() : null,
-          kennwort: kennwort.trim(),
-          istadmin: isAdmin, // API akzeptiert istadmin/isAdmin – hier eindeutig
-        }),
+        body: JSON.stringify({ name: name.trim(), email: email.trim() ? email.trim() : null, kennwort: kennwort.trim(), istadmin: isAdmin }),
       });
-
       const data = await res.json().catch(() => ({}));
-
       if (res.ok && (data?.ok === true || data?.id || data?.user)) {
         router.push("/benutzer");
         return;
       }
-
-      // Fehlermeldung hübsch anzeigen
-      const detail =
-        data?.detail ||
-        data?.message ||
-        data?.error ||
-        (typeof data === "string" ? data : "") ||
-        "Fehler beim Speichern";
+      const detail = data?.detail || data?.message || data?.error || (typeof data === "string" ? data : "") || "Fehler beim Speichern";
       setMsg(String(detail));
     } catch {
       setMsg("Netzwerkfehler");
@@ -54,131 +40,52 @@ export default function NeuerBenutzer() {
   }
 
   return (
-    <main style={{ padding: 24 }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 16, textAlign: "center" }}>
-          Neuer Benutzer
-        </h1>
+    <div className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-4xl px-6 py-8">
+        <h1 className="text-2xl font-bold text-slate-900 mb-6">Neuer Benutzer</h1>
 
-        <form
-          onSubmit={onSubmit}
-          style={{
-            background: "#fff",
-            borderRadius: 12,
-            border: "1px solid #e5e7eb",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-          }}
-        >
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, padding: 16 }}>
+        <form onSubmit={onSubmit} className="bg-white rounded-2xl border border-slate-200 shadow-sm">
+          <div className="p-6 grid grid-cols-2 gap-4">
             <div>
-              <label style={{ display: "block", fontWeight: 600, marginBottom: 6 }}>Name*</label>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Name"
-                required
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: 8,
-                }}
-              />
+              <label className={lbl}>Name*</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" required className={inp} />
             </div>
             <div>
-              <label style={{ display: "block", fontWeight: 600, marginBottom: 6 }}>E-Mail</label>
-              <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="E-Mail"
-                type="email"
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: 8,
-                }}
-              />
+              <label className={lbl}>E-Mail</label>
+              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-Mail" type="email" className={inp} />
             </div>
             <div>
-              <label style={{ display: "block", fontWeight: 600, marginBottom: 6 }}>
-                Kennwort*
+              <label className={lbl}>Kennwort*</label>
+              <input type="password" value={kennwort} onChange={(e) => setKennwort(e.target.value)} placeholder="Kennwort" required className={inp} />
+            </div>
+            <div className="flex items-end pb-2">
+              <label className="flex items-center gap-2 text-sm text-slate-700">
+                <input id="isAdmin" type="checkbox" checked={isAdmin} onChange={(e) => setIsAdmin(e.target.checked)} className="rounded" />
+                Administratorrechte
               </label>
-              <input
-                type="password"
-                value={kennwort}
-                onChange={(e) => setKennwort(e.target.value)}
-                placeholder="Kennwort"
-                required
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: 8,
-                }}
-              />
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <input
-                id="isAdmin"
-                type="checkbox"
-                checked={isAdmin}
-                onChange={(e) => setIsAdmin(e.target.checked)}
-              />
-              <label htmlFor="isAdmin">Administratorrechte</label>
             </div>
           </div>
 
-          {msg && (
-            <div style={{ color: "#dc2626", padding: "0 16px 12px 16px" }}>❌ {msg}</div>
-          )}
+          {msg && <p className="px-6 pb-2 text-sm text-red-600">{msg}</p>}
 
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              justifyContent: "flex-start",
-              padding: 16,
-              borderTop: "1px solid #e5e7eb",
-              background: "#f9fafb",
-              borderBottomLeftRadius: 12,
-              borderBottomRightRadius: 12,
-            }}
-          >
+          <div className="flex gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50 rounded-b-2xl">
             <button
               type="submit"
               disabled={saving}
-              style={{
-                background: "#3b82f6",
-                color: "#fff",
-                border: "none",
-                borderRadius: 8,
-                padding: "10px 16px",
-                fontWeight: 600,
-                cursor: "pointer",
-                opacity: saving ? 0.7 : 1,
-              }}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
               {saving ? "Speichere…" : "Speichern"}
             </button>
             <button
               type="button"
               onClick={() => router.push("/benutzer")}
-              style={{
-                background: "#e5e7eb",
-                color: "#111827",
-                border: "none",
-                borderRadius: 8,
-                padding: "10px 16px",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
+              className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors"
             >
               Abbrechen
             </button>
           </div>
         </form>
       </div>
-    </main>
+    </div>
   );
 }

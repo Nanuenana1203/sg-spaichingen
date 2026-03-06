@@ -2,6 +2,9 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+const inp = "w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
+const lbl = "block text-sm font-medium text-slate-700 mb-1.5";
+
 export default function BahnNeuPage() {
   const router = useRouter();
   const [nummer, setNummer] = useState("");
@@ -10,10 +13,7 @@ export default function BahnNeuPage() {
 
   async function onSave(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) {
-      alert("Bitte Name ausfüllen.");
-      return;
-    }
+    if (!name.trim()) { alert("Bitte Name ausfullen."); return; }
     setSaving(true);
     try {
       const res = await fetch("/api/bahnen", {
@@ -22,90 +22,49 @@ export default function BahnNeuPage() {
         body: JSON.stringify({ nummer: nummer.trim() || null, name: name.trim() }),
       });
       if (!res.ok) throw new Error(await res.text());
-      router.push('/bahnen');
+      router.push("/bahnen");
     } catch (err: any) {
       alert("Anlegen fehlgeschlagen.\n" + (err?.message ?? ""));
-      console.error(err);
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <main style={{ padding: "24px" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <h1 style={{ textAlign: "center", fontSize: "28px", fontWeight: 800, marginBottom: 16 }}>
-          Neue Bahn
-        </h1>
+    <div className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-4xl px-6 py-8">
+        <h1 className="text-2xl font-bold text-slate-900 mb-6">Neue Bahn</h1>
 
-        <form
-          onSubmit={onSave}
-          style={{ border: "1px solid #e5e7eb", borderRadius: 10, background: "#fff", padding: 20 }}
-        >
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <form onSubmit={onSave} className="bg-white rounded-2xl border border-slate-200 shadow-sm">
+          <div className="p-6 grid grid-cols-2 gap-4">
             <div>
-              <label style={{ display: "block", fontWeight: 600, marginBottom: 6 }}>Nummer</label>
-              <input
-                value={nummer}
-                onChange={(e) => setNummer(e.target.value)}
-                placeholder="z. B. 1"
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: 8,
-                }}
-              />
+              <label className={lbl}>Nummer</label>
+              <input value={nummer} onChange={(e) => setNummer(e.target.value)} placeholder="z. B. 1" className={inp} />
             </div>
             <div>
-              <label style={{ display: "block", fontWeight: 600, marginBottom: 6 }}>Name*</label>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Bezeichnung der Bahn"
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: 8,
-                }}
-              />
+              <label className={lbl}>Name*</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Bezeichnung der Bahn" className={inp} required />
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
+          <div className="flex gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50 rounded-b-2xl">
             <button
+              type="submit"
               disabled={saving}
-              style={{
-                background: "#3b82f6",
-                color: "#fff",
-                padding: "8px 14px",
-                borderRadius: 6,
-                fontWeight: 600,
-                border: "none",
-                cursor: "pointer",
-                opacity: saving ? 0.7 : 1,
-              }}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
               {saving ? "Speichern…" : "Speichern"}
             </button>
             <button
               type="button"
               onClick={() => history.back()}
-              style={{
-                background: "#e5e7eb",
-                padding: "8px 14px",
-                borderRadius: 6,
-                fontWeight: 600,
-                border: "none",
-                cursor: "pointer",
-              }}
+              className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors"
             >
               Abbrechen
             </button>
           </div>
         </form>
       </div>
-    </main>
+    </div>
   );
 }

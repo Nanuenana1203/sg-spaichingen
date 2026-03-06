@@ -1,26 +1,20 @@
 import { NextResponse } from "next/server";
-
-const BASE =
-  process.env.SUPABASE_URL ??
-  process.env.NEXT_PUBLIC_SUPABASE_URL ??
-  "";
-
-const KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ??
-  process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY ??
-  "";
-
-const headers: Record<string, string> = {
-  apikey: KEY,
-  Authorization: `Bearer ${KEY}`,
-  "Content-Type": "application/json",
-};
+import { BASE, KEY, headers, requireAuth, toBool } from "../../_supabase";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+function numOrNull(v: unknown): number | null {
+  if (v === "" || v == null) return null;
+  const n = Number(String(v).replace(",", "."));
+  return Number.isFinite(n) ? n : null;
+}
+
 /* ---------- GET ---------- */
 export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) {
+  const user = await requireAuth();
+  if (!user) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+
   if (!BASE || !KEY)
     return NextResponse.json({ ok: false, where: "env" }, { status: 500 });
 
@@ -42,20 +36,38 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
 
 /* ---------- PUT ---------- */
 export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const user = await requireAuth();
+  if (!user) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  if (!user.isAdmin) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+
   if (!BASE || !KEY)
     return NextResponse.json({ ok: false, where: "env" }, { status: 500 });
 
   const { id } = await ctx.params;
-  const body = await req.json();
+  const body: Record<string, unknown> = await req.json().catch(() => ({}));
 
   if (!body || Object.keys(body).length === 0)
+    return NextResponse.json({ ok: false, error: "EMPTY_PATCH" }, { status: 400 });
+
+  // Only allow known fields — no arbitrary column injection
+  const patch: Record<string, unknown> = {};
+  if (body.bezeichnung !== undefined) patch.bezeichnung = String(body.bezeichnung).trim();
+  if (body.artnr !== undefined) patch.artnr = body.artnr == null || body.artnr === "" ? null : String(body.artnr);
+  if (body.kachel !== undefined) patch.kachel = toBool(body.kachel);
+  if (body.aktiv  !== undefined) patch.aktiv  = toBool(body.aktiv);
+  for (let i = 1; i <= 9; i++) {
+    const key = `preis${i}` as keyof typeof body;
+    if (body[key] !== undefined) patch[key] = numOrNull(body[key]);
+  }
+
+  if (Object.keys(patch).length === 0)
     return NextResponse.json({ ok: false, error: "EMPTY_PATCH" }, { status: 400 });
 
   const url = `${BASE}/rest/v1/artikel?id=eq.${encodeURIComponent(id)}`;
   const r = await fetch(url, {
     method: "PATCH",
     headers: { ...headers, Prefer: "return=representation" },
-    body: JSON.stringify(body),
+    body: JSON.stringify(patch),
   });
 
   const t = await r.text();
@@ -70,12 +82,16 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
 }
 
 /* ---------- PATCH alias ---------- */
-export async function PATCH(req: Request, ctx: any) {
+export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
   return PUT(req, ctx);
 }
 
 /* ---------- DELETE ---------- */
 export async function DELETE(_: Request, ctx: { params: Promise<{ id: string }> }) {
+  const user = await requireAuth();
+  if (!user) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  if (!user.isAdmin) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+
   if (!BASE || !KEY)
     return NextResponse.json({ ok: false, where: "env" }, { status: 500 });
 

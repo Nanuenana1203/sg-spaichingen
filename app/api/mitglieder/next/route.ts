@@ -1,10 +1,5 @@
 import { NextResponse } from "next/server";
-
-// Falls du bereits eine zentrale _supabase.ts nutzt, kannst du diese drei Zeilen
-// durch `import { BASE, KEY, headers } from "../_supabase";` ersetzen.
-const BASE = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY ?? "";
-const headers: Record<string,string> = { apikey: KEY, Authorization: `Bearer ${KEY}` };
+import { BASE, KEY, headers } from "../../_supabase";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";

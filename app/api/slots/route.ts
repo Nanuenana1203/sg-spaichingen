@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 
-const BASE = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY ?? "";
-const headers: Record<string,string> = { apikey: KEY, Authorization: `Bearer ${KEY}` };
+import { BASE, KEY, headers } from "../_supabase";
 
 function pad(n:number){ return String(n).padStart(2,"0"); }
 function hhmm(s?:string|null){ if(!s) return ""; const m=String(s).match(/^(\d{2}:\d{2})/); return m?m[1]:String(s); }

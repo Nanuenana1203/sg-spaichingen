@@ -1,33 +1,20 @@
 import { NextResponse } from "next/server";
-
-const BASE =
-  process.env.SUPABASE_URL ??
-  process.env.NEXT_PUBLIC_SUPABASE_URL ??
-  "";
-
-const KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ??
-  process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY ??
-  "";
-
-const headers: Record<string, string> = {
-  apikey: KEY,
-  Authorization: `Bearer ${KEY}`,
-  "Content-Type": "application/json",
-  Accept: "application/json",
-};
+import { BASE, KEY, headers, requireAuth } from "../_supabase";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 /** Liste (immer alle Mitglieder, sortiert nach Name) */
 export async function GET() {
+  const user = await requireAuth();
+  if (!user) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+
   if (!BASE || !KEY)
     return NextResponse.json({ ok: false, where: "env" }, { status: 500 });
 
   const url =
     `${BASE}/rest/v1/mitglieder` +
-    `?select=id,mitgliedsnr,name,strasse,landkz,plz,ort,preisgruppe,ausweisnr,mitglied,gesperrt` +
+    `?select=id,mitgliedsnr,name,strasse,landkz,plz,ort,preisgruppe,ausweisnr,geburtsdatum,mitglied,gesperrt` +
     `&order=name.asc`;
 
   const r = await fetch(url, { headers, cache: "no-store" });
@@ -48,10 +35,14 @@ export async function GET() {
 
 /** Neues Mitglied anlegen */
 export async function POST(req: Request) {
+  const user = await requireAuth();
+  if (!user) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  if (!user.isAdmin) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+
   if (!BASE || !KEY)
     return NextResponse.json({ ok: false, where: "env" }, { status: 500 });
 
-  let body: any = {};
+  let body: Record<string, unknown> = {};
   try {
     body = await req.json();
   } catch {}

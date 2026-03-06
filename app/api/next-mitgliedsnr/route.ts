@@ -1,16 +1,8 @@
 import { NextResponse } from "next/server";
+import { BASE, KEY, headers } from "../_supabase";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
-
-const BASE = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY ?? "";
-
-const headers: Record<string,string> = {
-  apikey: KEY,
-  Authorization: `Bearer ${KEY}`,
-  "Content-Type": "application/json",
-};
 
 export async function GET() {
   if (!BASE || !KEY) {

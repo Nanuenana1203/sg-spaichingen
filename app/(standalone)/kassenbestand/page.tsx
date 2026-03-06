@@ -1,4 +1,4 @@
-// "use client" – Kassenbestand prüfen (kompakte Darstellung)
+// "use client" – Kassenbestand prüfen
 "use client";
 
 import Link from "next/link";
@@ -34,9 +34,7 @@ export default function KassenbestandPage() {
   function setCount(v: number, n: number) {
     setCounts((old) => ({ ...old, [String(v)]: Math.max(0, Math.floor(n) || 0) }));
   }
-  function getCount(v: number) {
-    return counts[String(v)] ?? 0;
-  }
+  function getCount(v: number) { return counts[String(v)] ?? 0; }
 
   const coins = DENOMS.filter(d => d.kind === "coin");
   const notes = DENOMS.filter(d => d.kind === "note");
@@ -49,47 +47,51 @@ export default function KassenbestandPage() {
 
   const totalCoins = coins.reduce((s, d) => s + subtotals[String(d.value)], 0);
   const totalNotes = notes.reduce((s, d) => s + subtotals[String(d.value)], 0);
-  const totalAll   = totalCoins + totalNotes;
+  const totalAll = totalCoins + totalNotes;
 
   return (
-    <div className="p-3 md:p-4 space-y-3 md:space-y-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-xl md:text-2xl font-semibold">Kassenbestand prüfen</h1>
-        <Link href="/dashboard" className="px-2 py-1 text-sm border rounded hover:bg-gray-50">← Zurück</Link>
-      </div>
+    <div className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-5xl px-6 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-slate-900">Kassenbestand prüfen</h1>
+          <Link href="/dashboard" className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors">
+            Zurück
+          </Link>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-        {[{ title: "Münzen", list: coins, total: totalCoins },
-          { title: "Scheine", list: notes, total: totalNotes }].map((block) => (
-          <div key={block.title} className="rounded-xl border bg-white/70 p-3 md:p-4 shadow-sm">
-            <h2 className="text-base md:text-lg font-semibold mb-2 md:mb-3">{block.title}</h2>
-            <div className="space-y-1.5 md:space-y-2">
-              {block.list.map((d) => (
-                <div key={d.value} className="flex items-center gap-2 border rounded px-2 py-1">
-                  <div className="w-16 md:w-20 text-xs md:text-sm">{d.label}</div>
-                  <div className="text-gray-500 text-xs md:text-sm">×</div>
-                  <input
-                    type="number"
-                    min="0"
-                    className="w-14 md:w-20 text-right border rounded px-1 md:px-2 py-0.5 md:py-1 text-sm"
-                    value={getCount(d.value)}
-                    onChange={(e) => setCount(d.value, Number(e.target.value))}
-                  />
-                  <div className="ml-auto tabular-nums text-sm md:text-base">
-                    {eur(subtotals[String(d.value)] || 0)}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+          {[{ title: "Münzen", list: coins, total: totalCoins },
+            { title: "Scheine", list: notes, total: totalNotes }].map((block) => (
+            <div key={block.title} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+              <h2 className="text-base font-semibold text-slate-900 mb-4">{block.title}</h2>
+              <div className="space-y-2">
+                {block.list.map((d) => (
+                  <div key={d.value} className="flex items-center gap-3 rounded-lg border border-slate-100 px-3 py-2">
+                    <span className="w-16 text-sm text-slate-600">{d.label}</span>
+                    <span className="text-slate-400 text-sm">×</span>
+                    <input
+                      type="number"
+                      min="0"
+                      className="w-20 text-right px-2 py-1 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={getCount(d.value)}
+                      onChange={(e) => setCount(d.value, Number(e.target.value))}
+                    />
+                    <span className="ml-auto text-sm font-medium text-slate-700 tabular-nums">
+                      {eur(subtotals[String(d.value)] || 0)}
+                    </span>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              <div className="text-right font-semibold text-slate-900 mt-4 pt-3 border-t border-slate-100">
+                Summe: {eur(block.total)}
+              </div>
             </div>
-            <div className="text-right font-semibold mt-3 md:mt-4 text-sm md:text-base">
-              Summe: {eur(block.total)}
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      <div className="rounded-xl border bg-white/70 p-3 md:p-4 shadow-sm text-right text-lg md:text-xl font-bold">
-        Gesamt: {eur(totalAll)}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 text-right">
+          <span className="text-lg font-bold text-slate-900">Gesamt: {eur(totalAll)}</span>
+        </div>
       </div>
     </div>
   );

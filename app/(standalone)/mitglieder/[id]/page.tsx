@@ -3,13 +3,16 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 type Mitglied = {
-  id:number; mitgliedsnr:string; name:string;
-  strasse?:string; landkz?:string; plz?:string; ort?:string;
-  preisgruppe?: number | null; ausweisnr?:string; mitglied?:boolean; gesperrt?:boolean;
+  id: number; mitgliedsnr: string; name: string;
+  strasse?: string; landkz?: string; plz?: string; ort?: string;
+  preisgruppe?: number | null; ausweisnr?: string; geburtsdatum?: string; mitglied?: boolean; gesperrt?: boolean;
 };
 
+const inp = "w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
+const lbl = "block text-sm font-medium text-slate-700 mb-1.5";
+
 export default function EditMitglied() {
-  const { id } = useParams<{ id:string }>();
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [m, setM] = useState<Mitglied | null>(null);
   const [loading, setLoading] = useState(true);
@@ -19,7 +22,7 @@ export default function EditMitglied() {
     (async () => {
       setLoading(true);
       try {
-        const r = await fetch(`/api/mitglieder/${id}`, { cache:"no-store" });
+        const r = await fetch(`/api/mitglieder/${id}`, { cache: "no-store" });
         const data = await r.json();
         setM(data);
       } finally { setLoading(false); }
@@ -31,96 +34,104 @@ export default function EditMitglied() {
     setErr("");
     if (!m) return;
     const body = { ...m, preisgruppe: m.preisgruppe == null || Number.isNaN(m.preisgruppe) ? null : Number(m.preisgruppe) };
-    const r = await fetch(`/api/mitglieder/${id}`, { method:"PUT", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(body) });
-    if (r.ok) router.push("/mitglieder"); else setErr("Speichern fehlgeschlagen");
+    const r = await fetch(`/api/mitglieder/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (r.ok) router.push("/mitglieder");
+    else setErr("Speichern fehlgeschlagen");
   }
 
-  const wrap = { maxWidth:1100, margin:"0 auto" };
-  const grid: React.CSSProperties = { display:"grid", gap:16, gridTemplateColumns:"repeat(12, minmax(0,1fr))" };
-  const input = { width:"100%", padding:"10px 12px", border:"1px solid #e5e7eb", borderRadius:8 };
-
-  if (loading || !m) return <main style={{padding:24}}><div style={wrap as any}>Lade…</div></main>;
+  if (loading || !m) return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <p className="text-slate-500 text-sm">Lade…</p>
+    </div>
+  );
 
   return (
-    <main style={{ padding:24 }}>
-      <div style={wrap}>
-        <h1 style={{ textAlign:"center", fontSize:28, fontWeight:800, marginBottom:16 }}>Mitglied bearbeiten</h1>
+    <div className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-4xl px-6 py-8">
+        <h1 className="text-2xl font-bold text-slate-900 mb-6">Kunde bearbeiten</h1>
 
-        <form onSubmit={save} style={{ background:"#fff", borderRadius:12, border:"1px solid #e5e7eb", boxShadow:"0 2px 8px rgba(0,0,0,.06)" }}>
-          <div style={{ padding:16, ...grid }}>
-            {/* Zeile 1 */}
-            <div style={{ gridColumn:"span 4 / span 4" }}>
-              <label style={{display:"block", fontWeight:600, marginBottom:6}}>Mitglieds-Nr.*</label>
-              <input value={m.mitgliedsnr||""} onChange={e=>setM({...m, mitgliedsnr:e.target.value})} style={input}/>
+        <form onSubmit={save} className="bg-white rounded-2xl border border-slate-200 shadow-sm">
+          <div className="p-6 grid grid-cols-12 gap-4">
+            <div className="col-span-4">
+              <label className={lbl}>Mitglieds-Nr.*</label>
+              <input value={m.mitgliedsnr || ""} onChange={e => setM({ ...m, mitgliedsnr: e.target.value })} className={inp} />
             </div>
-            <div style={{ gridColumn:"span 8 / span 8" }}>
-              <label style={{display:"block", fontWeight:600, marginBottom:6}}>Name*</label>
-              <input value={m.name||""} onChange={e=>setM({...m, name:e.target.value})} style={input}/>
-            </div>
-
-            {/* Zeile 2 */}
-            <div style={{ gridColumn:"span 12 / span 12" }}>
-              <label style={{display:"block", fontWeight:600, marginBottom:6}}>Straße</label>
-              <input value={m.strasse||""} onChange={e=>setM({...m, strasse:e.target.value})} style={input}/>
+            <div className="col-span-8">
+              <label className={lbl}>Name*</label>
+              <input value={m.name || ""} onChange={e => setM({ ...m, name: e.target.value })} className={inp} />
             </div>
 
-            {/* Zeile 3 */}
-            <div style={{ gridColumn:"span 2 / span 2" }}>
-              <label style={{display:"block", fontWeight:600, marginBottom:6}}>Landkz</label>
-              <input value={m.landkz||""} onChange={e=>setM({...m, landkz:e.target.value})} style={input}/>
-            </div>
-            <div style={{ gridColumn:"span 3 / span 3" }}>
-              <label style={{display:"block", fontWeight:600, marginBottom:6}}>PLZ</label>
-              <input value={m.plz||""} onChange={e=>setM({...m, plz:e.target.value})} style={input}/>
-            </div>
-            <div style={{ gridColumn:"span 7 / span 7" }}>
-              <label style={{display:"block", fontWeight:600, marginBottom:6}}>Ort</label>
-              <input value={m.ort||""} onChange={e=>setM({...m, ort:e.target.value})} style={input}/>
+            <div className="col-span-12">
+              <label className={lbl}>Strasse</label>
+              <input value={m.strasse || ""} onChange={e => setM({ ...m, strasse: e.target.value })} className={inp} />
             </div>
 
-            {/* Zeile 4 */}
-            <div style={{ gridColumn:"span 3 / span 3" }}>
-              <label style={{display:"block", fontWeight:600, marginBottom:6}}>Preisgruppe</label>
+            <div className="col-span-2">
+              <label className={lbl}>Landkz</label>
+              <input value={m.landkz || ""} onChange={e => setM({ ...m, landkz: e.target.value })} className={inp} />
+            </div>
+            <div className="col-span-3">
+              <label className={lbl}>PLZ</label>
+              <input value={m.plz || ""} onChange={e => setM({ ...m, plz: e.target.value })} className={inp} />
+            </div>
+            <div className="col-span-7">
+              <label className={lbl}>Ort</label>
+              <input value={m.ort || ""} onChange={e => setM({ ...m, ort: e.target.value })} className={inp} />
+            </div>
+
+            <div className="col-span-3">
+              <label className={lbl}>Preisgruppe</label>
               <input
-                type="text" inputMode="numeric" pattern="\d*" min={0} step={1}
+                type="text"
+                inputMode="numeric"
+                pattern="\d*"
                 value={(m.preisgruppe ?? "").toString()}
-                onChange={(e)=>{
-                  const v = e.target.value.replace(/\D/g,"");
-                  setM({...m, preisgruppe: v === "" ? null : Number(v)});
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, "");
+                  setM({ ...m, preisgruppe: v === "" ? null : Number(v) });
                 }}
-                style={{ ...input, textAlign:"right" }}
+                className={inp + " text-right"}
               />
             </div>
-            <div style={{ gridColumn:"span 9 / span 9" }}>
-              <label style={{display:"block", fontWeight:600, marginBottom:6}}>Ausweis-Nr.</label>
-              <input value={m.ausweisnr||""} onChange={e=>setM({...m, ausweisnr:e.target.value})} style={input}/>
+            <div className="col-span-5">
+              <label className={lbl}>Ausweis-Nr.</label>
+              <input value={m.ausweisnr || ""} onChange={e => setM({ ...m, ausweisnr: e.target.value })} className={inp} />
+            </div>
+            <div className="col-span-4">
+              <label className={lbl}>Geburtsdatum</label>
+              <input type="date" value={m.geburtsdatum || ""} onChange={e => setM({ ...m, geburtsdatum: e.target.value })} className={inp} />
+            </div>
+            <div className="col-span-12">
+              <div className="rounded-lg bg-slate-50 border border-slate-200 px-4 py-2.5 text-xs text-slate-500">
+                <span className="font-semibold text-slate-600 mr-2">Preisgruppen:</span>
+                1 = Gast / 2 = Mitglieder ohne Aufsicht / 3 = Mitglieder mit Aufsicht / 4 = Mitglieder mit Jahreskarte
+              </div>
             </div>
 
-            {/* Zeile 5: Flags */}
-            <div style={{ gridColumn:"span 12 / span 12", display:"flex", gap:24, alignItems:"center", marginTop:4 }}>
-              <label style={{ display:"flex", alignItems:"center", gap:8 }}>
-                <input type="checkbox" checked={!!m.mitglied} onChange={e=>setM({...m, mitglied:e.target.checked})}/> Mitglied
+            <div className="col-span-12 flex gap-6 items-center pt-1">
+              <label className="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" checked={!!m.mitglied} onChange={e => setM({ ...m, mitglied: e.target.checked })} className="rounded" />
+                Mitglied
               </label>
-              <label style={{ display:"flex", alignItems:"center", gap:8 }}>
-                <input type="checkbox" checked={!!m.gesperrt} onChange={e=>setM({...m, gesperrt:e.target.checked})}/> Gesperrt
+              <label className="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" checked={!!m.gesperrt} onChange={e => setM({ ...m, gesperrt: e.target.checked })} className="rounded" />
+                Gesperrt
               </label>
             </div>
           </div>
 
-          {err && <div style={{ color:"#dc2626", padding:"0 16px 12px 16px" }}>❌ {err}</div>}
+          {err && <p className="px-6 pb-2 text-sm text-red-600">{err}</p>}
 
-          <div style={{ display:"flex", gap:12, justifyContent:"flex-start", padding:16, borderTop:"1px solid #e5e7eb", background:"#f9fafb",
-                         borderBottomLeftRadius:12, borderBottomRightRadius:12 }}>
-            <button type="submit" style={{ background:"#3b82f6", color:"#fff", border:"none", borderRadius:8, padding:"10px 16px", fontWeight:600, cursor:"pointer" }}>
+          <div className="flex gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50 rounded-b-2xl">
+            <button type="submit" className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors">
               Speichern
             </button>
-            <button type="button" onClick={()=>router.push("/mitglieder")}
-              style={{ background:"#e5e7eb", color:"#111827", border:"none", borderRadius:8, padding:"10px 16px", fontWeight:600, cursor:"pointer" }}>
+            <button type="button" onClick={() => router.push("/mitglieder")} className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors">
               Abbrechen
             </button>
           </div>
         </form>
       </div>
-    </main>
+    </div>
   );
 }

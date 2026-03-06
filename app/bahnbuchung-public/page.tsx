@@ -221,9 +221,7 @@ export default function BahnbuchungPage() {
             Buchung stornieren
           </Link>
           <Suspense fallback={null}>
-            <Suspense fallback={null}>
-              <BackLink className="px-3 py-2 rounded border text-sm">Zurück</BackLink>
-            </Suspense>
+            <BackLink className="px-3 py-2 rounded border text-sm">Zurück</BackLink>
           </Suspense>
         </div>
       </div>

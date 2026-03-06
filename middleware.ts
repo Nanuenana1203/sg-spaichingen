@@ -13,6 +13,11 @@ const PROTECTED_PATHS = [
   "/zeitregeln",
   "/admin",
   "/bahnbuchung",
+  "/dienste",
+  "/dienstbuchung",
+  "/dienstbuchung-storno",
+  "/mitgliederverwaltung",
+  "/passwort",
 ];
 
 export function middleware(req: NextRequest) {
@@ -44,5 +49,10 @@ export const config = {
     "/zeitregeln/:path*",
     "/admin/:path*",
     "/bahnbuchung/:path*",
+    "/dienste/:path*",
+    "/dienstbuchung/:path*",
+    "/dienstbuchung-storno/:path*",
+    "/mitgliederverwaltung/:path*",
+    "/passwort/:path*",
   ],
 };

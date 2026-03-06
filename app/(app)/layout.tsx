@@ -1,12 +1,16 @@
 import "../globals.css";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export const metadata = { title: "SGS" };
 
 const navItem = "block px-3 py-1.5 rounded-md text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors";
 
-export default function AppLayout({ children }: { children: ReactNode }) {
+export default async function AppLayout({ children }: { children: ReactNode }) {
+  const cookieStore = await cookies();
+  if (!cookieStore.has("sgs_user")) redirect("/");
   const start = 2025;
   const year = new Date().getFullYear();
   const years = year <= start ? `${start}` : `${start}–${year}`;

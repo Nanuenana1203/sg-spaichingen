@@ -1,20 +1,14 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { BASE, KEY, headers } from "../_supabase";
+import { BASE, KEY, headers, requireAuth } from "../_supabase";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
+  const u = await requireAuth();
+  if (!u) return NextResponse.json({ ok:false, where:"auth", error:"NO_SESSION" }, { status:401 });
+  if (!u.isAdmin) return NextResponse.json({ ok:false, error:"FORBIDDEN" }, { status:403 });
   if (!BASE || !KEY) return NextResponse.json({ ok:false, where:"env" }, { status:500 });
-
-  const c = await cookies();
-  let u: any = null;
-  try { u = JSON.parse(c.get("sgs_user")?.value || "null"); } catch {}
-
-  if (!u?.id) {
-    return NextResponse.json({ ok:false, where:"auth", error:"NO_SESSION" }, { status:401 });
-  }
 
   let body: any = {};
   try { body = await req.json(); } catch {}

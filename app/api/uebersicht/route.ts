@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
-import { BASE, KEY, headers } from "../_supabase";
+import { BASE, KEY, headers, requireAuth } from "../_supabase";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function GET(req: Request) {
+  const user = await requireAuth();
+  if (!user) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   if (!BASE || !KEY) return NextResponse.json({ ok:false, error:"env" }, { status:500 });
   const { searchParams } = new URL(req.url);
   const from = searchParams.get("from") ?? new Date().toISOString().slice(0,10);

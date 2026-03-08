@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const inp = "w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 const lbl = "block text-sm font-medium text-slate-700 mb-1.5";
@@ -19,13 +19,29 @@ function emptySlot(): SlotForm {
   return { datum_von: "", datum_bis: "", uhrzeit_von: "", uhrzeit_bis: "", dauer_minuten: "", anzahl_personen: "1" };
 }
 
+const KATEGORIEN = ["Arbeitseinsatz", "Salat", "Kuchen"] as const;
+
 export default function NeuerDienst() {
   const router = useRouter();
   const [titel, setTitel] = useState("");
-  const [beschreibung, setBeschreibung] = useState("");
+  const [event, setEvent] = useState("");
+  const [kategorie, setKategorie] = useState("");
+  const [existingEvents, setExistingEvents] = useState<string[]>([]);
   const [slots, setSlots] = useState<SlotForm[]>([emptySlot()]);
   const [err, setErr] = useState("");
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/dienste", { cache: "no-store" })
+      .then(r => r.json())
+      .then((rows: { event?: string | null }[]) => {
+        if (!Array.isArray(rows)) return;
+        const evts = [...new Set(rows.map(r => r.event).filter(Boolean) as string[])].sort();
+        setExistingEvents(evts);
+      })
+      .catch(() => {});
+  }, []);
 
   function updateSlot(i: number, field: keyof SlotForm, val: string) {
     setSlots(prev => prev.map((s, idx) => idx === i ? { ...s, [field]: val } : s));
@@ -42,7 +58,7 @@ export default function NeuerDienst() {
       const r = await fetch("/api/dienste", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ titel, beschreibung }),
+        body: JSON.stringify({ titel, event, kategorie }),
       });
       const j = await r.json().catch(() => null);
       if (!r.ok || j?.ok === false) throw new Error(j?.detail || j?.error || "Fehler beim Anlegen");
@@ -69,7 +85,8 @@ export default function NeuerDienst() {
         if (!rs.ok || js?.ok === false) throw new Error(js?.detail || js?.error || "Fehler beim Slot-Anlegen");
       }
 
-      router.push("/dienste");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : String(e));
     } finally { setSaving(false); }
@@ -85,18 +102,28 @@ export default function NeuerDienst() {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
             <h2 className="text-base font-semibold text-slate-800">Grunddaten</h2>
             <div>
-              <label className={lbl}>Überschrift *</label>
-              <input className={inp} value={titel} onChange={e => setTitel(e.target.value)} placeholder="z. B. Vereinsputz Frühjahr 2026" required />
+              <label className={lbl}>Event</label>
+              <input
+                className={inp}
+                list="event-list"
+                value={event}
+                onChange={e => setEvent(e.target.value)}
+                placeholder="Event eingeben oder auswählen…"
+              />
+              <datalist id="event-list">
+                {existingEvents.map(ev => <option key={ev} value={ev} />)}
+              </datalist>
             </div>
             <div>
-              <label className={lbl}>Beschreibung / Was ist zu tun?</label>
-              <textarea
-                className={inp + " resize-none"}
-                rows={4}
-                value={beschreibung}
-                onChange={e => setBeschreibung(e.target.value)}
-                placeholder="Detaillierte Beschreibung der Aufgaben…"
-              />
+              <label className={lbl}>Kategorie</label>
+              <select className={inp} value={kategorie} onChange={e => setKategorie(e.target.value)}>
+                <option value="">– bitte wählen –</option>
+                {KATEGORIEN.map(k => <option key={k} value={k}>{k}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={lbl}>Überschrift *</label>
+              <input className={inp} value={titel} onChange={e => setTitel(e.target.value)} placeholder="z. B. Vereinsputz Frühjahr 2026" required />
             </div>
           </div>
 
@@ -164,6 +191,7 @@ export default function NeuerDienst() {
           </div>
 
           {err && <p className="text-sm text-red-600">{err}</p>}
+          {saved && <p className="text-sm text-green-600 font-medium">Gespeichert</p>}
 
           <div className="flex gap-3">
             <button type="submit" disabled={saving}

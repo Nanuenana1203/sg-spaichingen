@@ -11,7 +11,7 @@ export async function GET() {
   // Dienste + Slots laden
   const url =
     `${BASE}/rest/v1/dienste` +
-    `?select=id,titel,beschreibung,aktiv,created_at,dienst_slots(id,datum_von,datum_bis,uhrzeit_von,uhrzeit_bis,dauer_minuten,anzahl_personen)` +
+    `?select=id,titel,event,kategorie,aktiv,created_at,dienst_slots(id,datum_von,datum_bis,uhrzeit_von,uhrzeit_bis,dauer_minuten,anzahl_personen)` +
     `&aktiv=eq.true` +
     `&order=created_at.desc`;
 

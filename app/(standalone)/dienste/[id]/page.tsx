@@ -8,7 +8,9 @@ const lbl = "block text-sm font-medium text-slate-700 mb-1.5";
 
 type DienststZeile = { id: number; nummer: number; name: string | null; telefon: string | null; datum: string | null; buchung_von: string | null; buchung_bis: string | null; gebucht_am: string | null };
 type DienstSlot = { id: number; datum_von: string; datum_bis: string; uhrzeit_von: string; uhrzeit_bis: string; dauer_minuten: number | null; anzahl_personen: number; dienst_zeilen: DienststZeile[] };
-type Dienst = { id: number; titel: string; beschreibung: string | null; aktiv: boolean; dienst_slots: DienstSlot[] };
+type Dienst = { id: number; titel: string; event: string | null; kategorie: string | null; aktiv: boolean; dienst_slots: DienstSlot[] };
+
+const KATEGORIEN = ["Arbeitseinsatz", "Salat", "Kuchen"] as const;
 
 type NewSlot = { datum_von: string; datum_bis: string; uhrzeit_von: string; uhrzeit_bis: string; dauer_minuten: string; anzahl_personen: string };
 
@@ -17,8 +19,12 @@ function fmtDate(d: string) {
   return dt.toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric" });
 }
 function fmtTime(t: string) { return t.slice(0, 5); }
-function fmtDauer(min: number | null) {
-  if (!min) return null;
+function calcDauer(von: string, bis: string) {
+  const [hv, mv] = von.split(":").map(Number);
+  const [hb, mb] = bis.split(":").map(Number);
+  return (hb * 60 + mb) - (hv * 60 + mv);
+}
+function fmtDauer(min: number) {
   return min >= 60 ? `${Math.floor(min / 60)}h${min % 60 ? ` ${min % 60}min` : ""}` : `${min} min`;
 }
 function fmtTs(ts: string | null) {
@@ -31,13 +37,25 @@ export default function DienstDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [dienst, setDienst] = useState<Dienst | null>(null);
+  const [existingEvents, setExistingEvents] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [addingSlot, setAddingSlot] = useState(false);
   const [newSlot, setNewSlot] = useState<NewSlot>({ datum_von: "", datum_bis: "", uhrzeit_von: "", uhrzeit_bis: "", dauer_minuten: "", anzahl_personen: "1" });
 
-  useEffect(() => { load(); }, [id]);
+  useEffect(() => {
+    load();
+    fetch("/api/dienste", { cache: "no-store" })
+      .then(r => r.json())
+      .then((rows: { event?: string | null }[]) => {
+        if (!Array.isArray(rows)) return;
+        const evts = [...new Set(rows.map(r => r.event).filter(Boolean) as string[])].sort();
+        setExistingEvents(evts);
+      })
+      .catch(() => {});
+  }, [id]);
 
   async function load() {
     setLoading(true);
@@ -52,14 +70,17 @@ export default function DienstDetail() {
   }
 
   async function saveMeta(e: React.FormEvent) {
-    e.preventDefault(); setErr(""); setSaving(true);
+    e.preventDefault(); setErr(""); setSaving(true); setSaved(false);
     try {
       const r = await fetch(`/api/dienste/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ titel: dienst?.titel, beschreibung: dienst?.beschreibung, aktiv: dienst?.aktiv }),
+        body: JSON.stringify({ titel: dienst?.titel, event: dienst?.event, kategorie: dienst?.kategorie, aktiv: dienst?.aktiv }),
       });
       if (!r.ok) throw new Error("Speichern fehlgeschlagen");
+      setSaved(true);
+      setDienst(d => d ? { ...d, titel: "", event: null, kategorie: null } : d);
+      setTimeout(() => setSaved(false), 3000);
     } catch (e: unknown) { setErr(e instanceof Error ? e.message : String(e)); }
     finally { setSaving(false); }
   }
@@ -121,20 +142,35 @@ export default function DienstDetail() {
         <form onSubmit={saveMeta} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
           <h2 className="text-base font-semibold text-slate-800">Grunddaten</h2>
           <div>
-            <label className={lbl}>Überschrift *</label>
-            <input className={inp} value={dienst.titel} onChange={e => setDienst({ ...dienst, titel: e.target.value })} required />
+            <label className={lbl}>Event</label>
+            <input
+              className={inp}
+              list="event-list-edit"
+              value={dienst.event ?? ""}
+              onChange={e => setDienst({ ...dienst, event: e.target.value })}
+              placeholder="Event eingeben oder auswählen…"
+            />
+            <datalist id="event-list-edit">
+              {existingEvents.map(ev => <option key={ev} value={ev} />)}
+            </datalist>
           </div>
           <div>
-            <label className={lbl}>Beschreibung</label>
-            <textarea className={inp + " resize-none"} rows={3}
-              value={dienst.beschreibung ?? ""}
-              onChange={e => setDienst({ ...dienst, beschreibung: e.target.value })} />
+            <label className={lbl}>Kategorie</label>
+            <select className={inp} value={dienst.kategorie ?? ""} onChange={e => setDienst({ ...dienst, kategorie: e.target.value })}>
+              <option value="">– bitte wählen –</option>
+              {KATEGORIEN.map(k => <option key={k} value={k}>{k}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={lbl}>Überschrift *</label>
+            <input className={inp} value={dienst.titel} onChange={e => setDienst({ ...dienst, titel: e.target.value })} required />
           </div>
           <label className="flex items-center gap-2 text-sm text-slate-700">
             <input type="checkbox" checked={dienst.aktiv} onChange={e => setDienst({ ...dienst, aktiv: e.target.checked })} className="rounded" />
             Aktiv (in Dienstübersicht sichtbar)
           </label>
           {err && <p className="text-sm text-red-600">{err}</p>}
+          {saved && <p className="text-sm text-green-600 font-medium">Gespeichert</p>}
           <button type="submit" disabled={saving}
             className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50">
             {saving ? "Speichern…" : "Änderungen speichern"}
@@ -221,7 +257,7 @@ export default function DienstDetail() {
                           {multiday ? `${fmtDate(slot.datum_von)} – ${fmtDate(slot.datum_bis)}` : fmtDate(slot.datum_von)}
                         </span>
                         <span className="text-slate-500">{fmtTime(slot.uhrzeit_von)} – {fmtTime(slot.uhrzeit_bis)}</span>
-                        {slot.dauer_minuten && <span className="text-slate-500">{fmtDauer(slot.dauer_minuten)}</span>}
+                        <span className="text-slate-500">{fmtDauer(slot.dauer_minuten ?? calcDauer(slot.uhrzeit_von, slot.uhrzeit_bis))}</span>
                         <span className={`font-medium ${free === 0 ? "text-red-600" : "text-green-700"}`}>
                           {free} / {slot.anzahl_personen} frei
                         </span>

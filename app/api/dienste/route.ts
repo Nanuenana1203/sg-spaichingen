@@ -12,7 +12,7 @@ export async function GET() {
 
   const url =
     `${BASE}/rest/v1/dienste` +
-    `?select=id,titel,beschreibung,aktiv,created_at,dienst_slots(id,datum_von,datum_bis,uhrzeit_von,uhrzeit_bis,dauer_minuten,anzahl_personen,dienst_zeilen(id,nummer,name,telefon,datum,buchung_von,buchung_bis,gebucht_am))` +
+    `?select=id,titel,event,kategorie,aktiv,created_at,dienst_slots(id,datum_von,datum_bis,uhrzeit_von,uhrzeit_bis,dauer_minuten,anzahl_personen,dienst_zeilen(id,nummer,name,telefon,datum,buchung_von,buchung_bis,gebucht_am))` +
     `&order=created_at.desc`;
 
   const r = await fetch(url, { headers, cache: "no-store" });
@@ -36,7 +36,8 @@ export async function POST(req: Request) {
 
   const payload = {
     titel,
-    beschreibung: body?.beschreibung ? String(body.beschreibung).trim() : null,
+    event: body?.event ? String(body.event).trim() : null,
+    kategorie: body?.kategorie ? String(body.kategorie).trim() : null,
     aktiv: body?.aktiv === false ? false : true,
   };
 

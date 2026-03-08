@@ -24,13 +24,23 @@ export async function POST(req: Request) {
   if (!dienst_id || !datum_von || !datum_bis || !uhrzeit_von || !uhrzeit_bis)
     return NextResponse.json({ ok: false, error: "MISSING_FIELDS" }, { status: 400 });
 
+  function calcDauer(von: string, bis: string) {
+    const [hv, mv] = von.split(":").map(Number);
+    const [hb, mb] = bis.split(":").map(Number);
+    return (hb * 60 + mb) - (hv * 60 + mv);
+  }
+
+  const dauer_minuten = body?.dauer_minuten
+    ? Number(body.dauer_minuten)
+    : calcDauer(uhrzeit_von, uhrzeit_bis);
+
   const slotPayload = {
     dienst_id,
     datum_von,
     datum_bis,
     uhrzeit_von,
     uhrzeit_bis,
-    dauer_minuten: body?.dauer_minuten ? Number(body.dauer_minuten) : null,
+    dauer_minuten,
     anzahl_personen,
   };
 

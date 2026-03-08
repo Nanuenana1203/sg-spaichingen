@@ -18,7 +18,8 @@ type DienstSlot = {
 type Dienst = {
   id: number;
   titel: string;
-  beschreibung: string | null;
+  event: string | null;
+  kategorie: string | null;
   aktiv: boolean;
   dienst_slots: DienstSlot[];
 };
@@ -128,6 +129,27 @@ export default function DienstbuchungPublicPage() {
     </div>
   );
 
+  // Sortieren + nach Event und Kategorie gruppieren
+  const sorted = [...dienste].sort((a, b) => {
+    const evA = a.event ?? "\uffff";
+    const evB = b.event ?? "\uffff";
+    if (evA !== evB) return evA.localeCompare(evB, "de");
+    const dateA = [...(a.dienst_slots ?? [])].map(s => s.datum_von).sort()[0] ?? "";
+    const dateB = [...(b.dienst_slots ?? [])].map(s => s.datum_von).sort()[0] ?? "";
+    if (dateA !== dateB) return dateA.localeCompare(dateB);
+    return (a.kategorie ?? "").localeCompare(b.kategorie ?? "", "de");
+  });
+  const eventGroups: { event: string; katGroups: { kat: string; dienste: Dienst[] }[] }[] = [];
+  for (const d of sorted) {
+    const ev = d.event ?? "";
+    const kat = d.kategorie ?? "";
+    let evGroup = eventGroups.find(g => g.event === ev);
+    if (!evGroup) { evGroup = { event: ev, katGroups: [] }; eventGroups.push(evGroup); }
+    let katGroup = evGroup.katGroups.find(g => g.kat === kat);
+    if (!katGroup) { katGroup = { kat, dienste: [] }; evGroup.katGroups.push(katGroup); }
+    katGroup.dienste.push(d);
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Toaster richColors position="top-center" />
@@ -167,107 +189,129 @@ export default function DienstbuchungPublicPage() {
             <p className="text-slate-500 text-sm">Aktuell sind keine buchbaren Dienste verfügbar.</p>
           </div>
         ) : (
-          <div className="space-y-6">
-            {dienste.map(dienst => {
-              const slots = (dienst.dienst_slots ?? []).slice().sort((a, b) =>
-                a.datum_von.localeCompare(b.datum_von) || a.uhrzeit_von.localeCompare(b.uhrzeit_von));
-              return (
-                <div key={dienst.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                  <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-                    <h2 className="text-base font-bold text-slate-900">{dienst.titel}</h2>
-                    {dienst.beschreibung && <p className="mt-1 text-sm text-slate-600 whitespace-pre-line">{dienst.beschreibung}</p>}
+          <div className="space-y-8">
+            {eventGroups.map(({ event: ev, katGroups }) => (
+              <div key={ev}>
+                {/* Event-Header */}
+                {ev && (
+                  <div className="flex items-center gap-3 mb-4">
+                    <h2 className="text-2xl font-bold text-slate-900">{ev}</h2>
+                    <div className="flex-1 h-px bg-slate-200" />
                   </div>
-                  <div className="divide-y divide-slate-100">
-                    {slots.map(slot => {
-                      const gebucht = slot.anzahl_gebucht ?? 0;
-                      const frei = slot.anzahl_personen - gebucht;
-                      const ausgebucht = frei <= 0;
-                      const flex = isFlexible(slot);
-                      const tage = datesInRange(slot.datum_von, slot.datum_bis);
-                      const isOpen = active?.slotId === slot.id;
-                      return (
-                        <Fragment key={slot.id}>
-                          <div className={`${isOpen ? "bg-blue-50" : ""} transition-colors`}>
-                            <div className={`px-5 py-4 flex items-center justify-between gap-4 ${isOpen ? "" : "hover:bg-slate-50"}`}>
-                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                                <span className="font-medium text-slate-800">
-                                  {tage.length > 1 ? `${fmtDate(slot.datum_von)} – ${fmtDate(slot.datum_bis)}` : fmtDate(slot.datum_von)}
-                                </span>
-                                <span className="text-slate-500">{fmtTime(slot.uhrzeit_von)} – {fmtTime(slot.uhrzeit_bis)}</span>
-                                {slot.dauer_minuten && <span className="text-slate-400 text-xs">Dauer: {fmtDauer(slot.dauer_minuten)}</span>}
-                                {flex && <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">Flexibel buchbar</span>}
+                )}
+                <div className="space-y-5">
+                  {katGroups.map(({ kat, dienste: diensteListe }) => (
+                    <div key={kat}>
+                      {/* Kategorie-Header */}
+                      {kat && (
+                        <p className="text-lg font-bold text-slate-800 mb-2 ml-1">{kat}</p>
+                      )}
+                      <div className="space-y-3">
+                        {diensteListe.map(dienst => {
+                          const slots = (dienst.dienst_slots ?? []).slice().sort((a, b) =>
+                            a.datum_von.localeCompare(b.datum_von) || a.uhrzeit_von.localeCompare(b.uhrzeit_von));
+                          return (
+                            <div key={dienst.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                              <div className="px-6 py-3 border-b border-slate-100 bg-slate-50">
+                                <h3 className="text-base font-bold text-slate-900">{dienst.titel}</h3>
                               </div>
-                              <div className="flex items-center gap-3 shrink-0">
-                                <span className={`text-sm font-semibold ${ausgebucht ? "text-red-600" : frei <= 2 ? "text-amber-600" : "text-green-700"}`}>
-                                  {ausgebucht ? "Ausgebucht" : `${frei} / ${slot.anzahl_personen} frei`}
-                                </span>
-                                {!ausgebucht && (
-                                  <button onClick={() => openSlot(slot)}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${isOpen ? "bg-slate-200 text-slate-700 hover:bg-slate-300" : "bg-blue-600 text-white hover:bg-blue-700"}`}>
-                                    {isOpen ? "Abbrechen" : "Buchen"}
-                                  </button>
-                                )}
+                              <div className="divide-y divide-slate-100">
+                                {slots.map(slot => {
+                                  const gebucht = slot.anzahl_gebucht ?? 0;
+                                  const frei = slot.anzahl_personen - gebucht;
+                                  const ausgebucht = frei <= 0;
+                                  const flex = isFlexible(slot);
+                                  const tage = datesInRange(slot.datum_von, slot.datum_bis);
+                                  const isOpen = active?.slotId === slot.id;
+                                  return (
+                                    <Fragment key={slot.id}>
+                                      <div className={`${isOpen ? "bg-blue-50" : ""} transition-colors`}>
+                                        <div className={`px-5 py-4 flex items-center justify-between gap-4 ${isOpen ? "" : "hover:bg-slate-50"}`}>
+                                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                                            <span className="font-medium text-slate-800">
+                                              {tage.length > 1 ? `${fmtDate(slot.datum_von)} – ${fmtDate(slot.datum_bis)}` : fmtDate(slot.datum_von)}
+                                            </span>
+                                            <span className="text-slate-500">{fmtTime(slot.uhrzeit_von)} – {fmtTime(slot.uhrzeit_bis)}</span>
+                                            {slot.dauer_minuten && <span className="text-slate-400 text-xs">Dauer: {fmtDauer(slot.dauer_minuten)}</span>}
+                                            {flex && <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">Flexibel buchbar</span>}
+                                          </div>
+                                          <div className="flex items-center gap-3 shrink-0">
+                                            <span className={`text-sm font-semibold ${ausgebucht ? "text-red-600" : frei <= 2 ? "text-amber-600" : "text-green-700"}`}>
+                                              {ausgebucht ? "Ausgebucht" : `${frei} / ${slot.anzahl_personen} frei`}
+                                            </span>
+                                            {!ausgebucht && (
+                                              <button onClick={() => openSlot(slot)}
+                                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${isOpen ? "bg-slate-200 text-slate-700 hover:bg-slate-300" : "bg-blue-600 text-white hover:bg-blue-700"}`}>
+                                                {isOpen ? "Abbrechen" : "Buchen"}
+                                              </button>
+                                            )}
+                                          </div>
+                                        </div>
+                                        {isOpen && active && (
+                                          <div className="px-5 pb-4 pt-0">
+                                            <div className="border-t border-blue-200 pt-4">
+                                              <p className="text-xs font-semibold uppercase tracking-wide text-blue-600 mb-3">
+                                                {flex ? "Datum und Zeit wählen" : "Buchung bestätigen"}
+                                              </p>
+                                              <div className="flex flex-wrap items-end gap-3">
+                                                {flex ? (
+                                                  <div>
+                                                    <label className="block text-xs font-medium text-slate-600 mb-1">Datum *</label>
+                                                    <input type="date" className={inp} min={slot.datum_von} max={slot.datum_bis}
+                                                      value={active.datum} onChange={e => setActive(a => a ? { ...a, datum: e.target.value } : a)} />
+                                                  </div>
+                                                ) : (
+                                                  <div>
+                                                    <label className="block text-xs font-medium text-slate-600 mb-1">Datum</label>
+                                                    <span className="block px-3 py-2 text-sm text-slate-700 bg-slate-100 rounded-lg">{fmtDate(slot.datum_von)}</span>
+                                                  </div>
+                                                )}
+                                                <div>
+                                                  <label className="block text-xs font-medium text-slate-600 mb-1">Von *</label>
+                                                  {flex ? (
+                                                    <input type="time" className={inp} min={fmtTime(slot.uhrzeit_von)} max={fmtTime(slot.uhrzeit_bis)}
+                                                      value={active.zeitVon} onChange={e => onZeitVonChange(e.target.value, slot)} />
+                                                  ) : (
+                                                    <span className="block px-3 py-2 text-sm text-slate-700 bg-slate-100 rounded-lg">{fmtTime(slot.uhrzeit_von)}</span>
+                                                  )}
+                                                </div>
+                                                <div>
+                                                  <label className="block text-xs font-medium text-slate-600 mb-1">Bis *</label>
+                                                  {flex ? (
+                                                    <input type="time" className={inp} min={active.zeitVon || fmtTime(slot.uhrzeit_von)} max={fmtTime(slot.uhrzeit_bis)}
+                                                      value={active.zeitBis} onChange={e => setActive(a => a ? { ...a, zeitBis: e.target.value } : a)} />
+                                                  ) : (
+                                                    <span className="block px-3 py-2 text-sm text-slate-700 bg-slate-100 rounded-lg">{fmtTime(slot.uhrzeit_bis)}</span>
+                                                  )}
+                                                </div>
+                                                {active.datum && active.zeitVon && active.zeitBis && (
+                                                  <div className="text-xs text-slate-500 self-end pb-2">
+                                                    {name && <><strong>{name}</strong> · </>}
+                                                    {fmtDate(active.datum)} · {active.zeitVon}–{active.zeitBis}
+                                                  </div>
+                                                )}
+                                                <button onClick={() => buchen(slot)} disabled={booking || !active.datum || !active.zeitVon || !active.zeitBis}
+                                                  className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50 self-end">
+                                                  {booking ? "…" : "Jetzt buchen"}
+                                                </button>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </Fragment>
+                                  );
+                                })}
                               </div>
                             </div>
-                            {isOpen && active && (
-                              <div className="px-5 pb-4 pt-0">
-                                <div className="border-t border-blue-200 pt-4">
-                                  <p className="text-xs font-semibold uppercase tracking-wide text-blue-600 mb-3">
-                                    {flex ? "Datum und Zeit wählen" : "Buchung bestätigen"}
-                                  </p>
-                                  <div className="flex flex-wrap items-end gap-3">
-                                    {flex ? (
-                                      <div>
-                                        <label className="block text-xs font-medium text-slate-600 mb-1">Datum *</label>
-                                        <input type="date" className={inp} min={slot.datum_von} max={slot.datum_bis}
-                                          value={active.datum} onChange={e => setActive(a => a ? { ...a, datum: e.target.value } : a)} />
-                                      </div>
-                                    ) : (
-                                      <div>
-                                        <label className="block text-xs font-medium text-slate-600 mb-1">Datum</label>
-                                        <span className="block px-3 py-2 text-sm text-slate-700 bg-slate-100 rounded-lg">{fmtDate(slot.datum_von)}</span>
-                                      </div>
-                                    )}
-                                    <div>
-                                      <label className="block text-xs font-medium text-slate-600 mb-1">Von *</label>
-                                      {flex ? (
-                                        <input type="time" className={inp} min={fmtTime(slot.uhrzeit_von)} max={fmtTime(slot.uhrzeit_bis)}
-                                          value={active.zeitVon} onChange={e => onZeitVonChange(e.target.value, slot)} />
-                                      ) : (
-                                        <span className="block px-3 py-2 text-sm text-slate-700 bg-slate-100 rounded-lg">{fmtTime(slot.uhrzeit_von)}</span>
-                                      )}
-                                    </div>
-                                    <div>
-                                      <label className="block text-xs font-medium text-slate-600 mb-1">Bis *</label>
-                                      {flex ? (
-                                        <input type="time" className={inp} min={active.zeitVon || fmtTime(slot.uhrzeit_von)} max={fmtTime(slot.uhrzeit_bis)}
-                                          value={active.zeitBis} onChange={e => setActive(a => a ? { ...a, zeitBis: e.target.value } : a)} />
-                                      ) : (
-                                        <span className="block px-3 py-2 text-sm text-slate-700 bg-slate-100 rounded-lg">{fmtTime(slot.uhrzeit_bis)}</span>
-                                      )}
-                                    </div>
-                                    {active.datum && active.zeitVon && active.zeitBis && (
-                                      <div className="text-xs text-slate-500 self-end pb-2">
-                                        {name && <><strong>{name}</strong> · </>}
-                                        {fmtDate(active.datum)} · {active.zeitVon}–{active.zeitBis}
-                                      </div>
-                                    )}
-                                    <button onClick={() => buchen(slot)} disabled={booking || !active.datum || !active.zeitVon || !active.zeitBis}
-                                      className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50 self-end">
-                                      {booking ? "…" : "Jetzt buchen"}
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </Fragment>
-                      );
-                    })}
-                  </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>

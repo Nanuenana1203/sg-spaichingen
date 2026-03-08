@@ -13,7 +13,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   const { id } = await ctx.params;
   const url =
     `${BASE}/rest/v1/dienste` +
-    `?select=id,titel,beschreibung,aktiv,created_at,dienst_slots(id,datum_von,datum_bis,uhrzeit_von,uhrzeit_bis,dauer_minuten,anzahl_personen,dienst_zeilen(id,nummer,name,gebucht_am))` +
+    `?select=id,titel,event,kategorie,aktiv,created_at,dienst_slots(id,datum_von,datum_bis,uhrzeit_von,uhrzeit_bis,dauer_minuten,anzahl_personen,dienst_zeilen(id,nummer,name,gebucht_am))` +
     `&id=eq.${encodeURIComponent(id)}&limit=1`;
 
   const r = await fetch(url, { headers, cache: "no-store" });
@@ -39,7 +39,8 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
 
   const row: Record<string, unknown> = {};
   if (body?.titel !== undefined) row.titel = String(body.titel).trim();
-  if (body?.beschreibung !== undefined) row.beschreibung = body.beschreibung || null;
+  if (body?.event !== undefined) row.event = body.event ? String(body.event).trim() : null;
+  if (body?.kategorie !== undefined) row.kategorie = body.kategorie ? String(body.kategorie).trim() : null;
   if (body?.aktiv !== undefined) row.aktiv = !!body.aktiv;
 
   const r = await fetch(`${BASE}/rest/v1/dienste?id=eq.${encodeURIComponent(id)}`, {

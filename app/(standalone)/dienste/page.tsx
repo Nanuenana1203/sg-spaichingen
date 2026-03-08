@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 type DienststZeile = { id: number; name: string | null };
 type DienstSlot = { id: number; datum_von: string; datum_bis: string; uhrzeit_von: string; uhrzeit_bis: string; dauer_minuten: number | null; anzahl_personen: number; dienst_zeilen: DienststZeile[] };
-type Dienst = { id: number; titel: string; beschreibung: string | null; aktiv: boolean; created_at: string; dienst_slots: DienstSlot[] };
+type Dienst = { id: number; titel: string; event: string | null; kategorie: string | null; aktiv: boolean; created_at: string; dienst_slots: DienstSlot[] };
 
 type Gate = "loading" | "ok" | "no-session" | "forbidden";
 
@@ -96,7 +96,9 @@ export default function DienstePage() {
             <table className="w-full">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Event</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Titel</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Kategorie</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Zeitraum</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wide">Slots</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wide">Gebucht</th>
@@ -105,7 +107,20 @@ export default function DienstePage() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map(d => {
+                {[...rows]
+                  .sort((a, b) => {
+                    // 1. Event alphabetisch (leer ans Ende)
+                    const evA = a.event ?? "\uffff";
+                    const evB = b.event ?? "\uffff";
+                    if (evA !== evB) return evA.localeCompare(evB, "de");
+                    // 2. Frühestes Datum des Dienstes
+                    const dateA = [...(a.dienst_slots ?? [])].map(s => s.datum_von).sort()[0] ?? "";
+                    const dateB = [...(b.dienst_slots ?? [])].map(s => s.datum_von).sort()[0] ?? "";
+                    if (dateA !== dateB) return dateA.localeCompare(dateB);
+                    // 3. Kategorie alphabetisch
+                    return (a.kategorie ?? "").localeCompare(b.kategorie ?? "", "de");
+                  })
+                  .map(d => {
                   const slots = d.dienst_slots ?? [];
                   const totalPlätze = slots.reduce((s, sl) => s + sl.anzahl_personen, 0);
                   const totalGebucht = slots.reduce((s, sl) => s + (sl.dienst_zeilen ?? []).filter(z => z.name).length, 0);
@@ -117,10 +132,11 @@ export default function DienstePage() {
                     : "–";
                   return (
                     <tr key={d.id} className="border-t border-slate-100 hover:bg-slate-50">
+                      <td className="px-4 py-3 text-slate-700 text-sm font-medium">{d.event ?? <span className="text-slate-400 italic">–</span>}</td>
                       <td className="px-4 py-3">
                         <p className="text-slate-900 font-medium">{d.titel}</p>
-                        {d.beschreibung && <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{d.beschreibung}</p>}
                       </td>
+                      <td className="px-4 py-3 text-slate-600 text-sm">{d.kategorie ?? <span className="text-slate-400">–</span>}</td>
                       <td className="px-4 py-3 text-slate-600 text-sm">{vonBis}</td>
                       <td className="px-4 py-3 text-center text-slate-600 text-sm">{slots.length}</td>
                       <td className="px-4 py-3 text-center text-sm">

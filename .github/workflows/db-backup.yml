@@ -13,9 +13,9 @@ jobs:
 
     steps:
       - name: Supabase CLI installieren
-        run: |
-          npm install -g supabase
-          supabase --version
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
 
       - name: Datenbank dumpen
         env:

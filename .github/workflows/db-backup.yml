@@ -14,8 +14,7 @@ jobs:
     steps:
       - name: Supabase CLI installieren
         run: |
-          curl -fsSL https://github.com/supabase/cli/releases/latest/download/supabase_linux_amd64.tar.gz \
-            | tar -xz -C /usr/local/bin supabase
+          npm install -g supabase
           supabase --version
 
       - name: Datenbank dumpen

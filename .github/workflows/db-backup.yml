@@ -21,7 +21,7 @@ jobs:
         run: |
           STAMP=$(date +%Y%m%d-%H%M%S)
           # IPv4-Adresse auflösen (GitHub Actions hat IPv6-Probleme mit Supabase)
-          DB_IP=$(dig +short A db.rxprumwtuijmpohuunun.supabase.co | head -1)
+          DB_IP=$(python3 -c "import socket; print(socket.getaddrinfo('db.rxprumwtuijmpohuunun.supabase.co', 5432, socket.AF_INET)[0][4][0])")
           echo "Verbinde mit $DB_IP"
           pg_dump \
             -h "$DB_IP" \

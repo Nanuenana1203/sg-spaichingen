@@ -236,8 +236,8 @@ export default function DienstbuchungPublicPage() {
                                             {flex && <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">Flexibel buchbar</span>}
                                           </div>
                                           <div className="flex items-center gap-3 shrink-0">
-                                            <span className={`text-sm font-semibold ${ausgebucht ? "text-red-600" : frei <= 2 ? "text-amber-600" : "text-green-700"}`}>
-                                              {ausgebucht ? "Ausgebucht" : `${frei} / ${slot.anzahl_personen} frei`}
+                                            <span className={`text-sm font-semibold ${ausgebucht ? "text-red-600" : "text-green-700"}`}>
+                                              {ausgebucht ? "Gebucht" : `${frei} / ${slot.anzahl_personen} frei`}
                                             </span>
                                             {!ausgebucht && (
                                               <button onClick={() => openSlot(slot)}

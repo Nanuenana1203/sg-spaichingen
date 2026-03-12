@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
 
@@ -162,10 +163,10 @@ export default function DienstbuchungPublicPage() {
               className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors">
               Buchung stornieren
             </button>
-            <button onClick={() => router.back()}
+            <Link href="/"
               className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors">
               Zurück
-            </button>
+            </Link>
           </div>
         </div>
 

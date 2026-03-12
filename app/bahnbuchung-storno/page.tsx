@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 type Buchung = {
   id: number;
@@ -15,6 +16,13 @@ type Buchung = {
 };
 
 export default function StornoPage() {
+  return <Suspense><StornoInner /></Suspense>;
+}
+
+function StornoInner() {
+  const searchParams = useSearchParams();
+  const backHref = searchParams.get("ref") === "intern" ? "/dashboard" : "/bahnbuchung-public";
+
   const [email, setEmail] = useState("");
   const [items, setItems] = useState<Buchung[]>([]);
   const [msg, setMsg] = useState("");
@@ -50,7 +58,7 @@ export default function StornoPage() {
     setDeletingId(id);
     setMsg("");
     try {
-      const res = await fetch(`/api/buchungen?id=${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/buchungen?id=${id}&email=${encodeURIComponent(email.trim())}`, { method: "DELETE" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || data?.ok === false) {
         setMsg("Löschen fehlgeschlagen.");
@@ -70,13 +78,14 @@ export default function StornoPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Buchung stornieren</h1>
         <Link
-          href="/bahnbuchung"
+          href={backHref}
           className="px-3 py-1 rounded border"
         >
           ← Zurück
         </Link>
       </div>
 
+      <p className="text-sm text-gray-600">Bitte die E-Mail-Adresse eingeben, unter der die Buchung vorgenommen wurde.</p>
       <form onSubmit={suchen} className="flex gap-3">
         <input
           className="flex-1 rounded border px-3 py-2"

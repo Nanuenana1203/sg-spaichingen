@@ -45,7 +45,6 @@ export async function POST(req: Request) {
     method: "POST",
     headers: { ...headers, Prefer: "return=representation" },
     body: JSON.stringify(payload),
-    cache: "no-store",
   });
   const t = await r.text();
   if (!r.ok) return NextResponse.json({ ok: false, detail: t.slice(0, 400) }, { status: 502 });

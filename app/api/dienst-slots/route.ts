@@ -52,7 +52,14 @@ export async function POST(req: Request) {
     cache: "no-store",
   });
   const t = await r.text();
-  if (!r.ok) return NextResponse.json({ ok: false, detail: t.slice(0, 400) }, { status: 502 });
+  if (!r.ok) {
+    let msg = t.slice(0, 400);
+    try {
+      const e = JSON.parse(t);
+      if (e?.code === "23505") msg = "Datenbankfehler: ID-Sequenz nicht synchron. Bitte Administrator informieren (SQL: setval dienst_slots).";
+    } catch {}
+    return NextResponse.json({ ok: false, detail: msg }, { status: 502 });
+  }
 
   let slot: Record<string, unknown> | null = null;
   try {

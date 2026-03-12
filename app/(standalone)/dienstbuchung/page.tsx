@@ -280,7 +280,7 @@ export default function DienstbuchungPage() {
               className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors">
               Excel exportieren
             </button>
-            <Link href="/dienstbuchung-storno" className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors">
+            <Link href="/dienstbuchung-storno?ref=intern" className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors">
               Buchung stornieren
             </Link>
             <button onClick={() => router.back()} className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors">

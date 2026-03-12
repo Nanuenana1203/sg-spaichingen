@@ -19,7 +19,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
 ```
 
-The active Supabase project is **Vereinxxl** (`rxprumwtuijmpohuunun`, eu-west-1).
+The active Supabase project is **sgs-neu** (`rhnpshxcefpycvfteger`, eu-central-1, org `ykrenjpaftnazkkkrmhy`).
 
 ## Architecture
 

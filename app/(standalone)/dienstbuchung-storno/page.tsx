@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 type Zeile = {
   id: number;
@@ -36,6 +37,12 @@ function fmtTs(ts: string | null) {
 const inp = "px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 
 export default function DienstStornoPage() {
+  return <Suspense><DienstStornoInner /></Suspense>;
+}
+
+function DienstStornoInner() {
+  const searchParams = useSearchParams();
+  const backHref = searchParams.get("ref") === "intern" ? "/dashboard" : "/dienstbuchung-public";
   const [name, setName] = useState("");
   const [items, setItems] = useState<Zeile[]>([]);
   const [msg, setMsg] = useState("");
@@ -76,7 +83,7 @@ export default function DienstStornoPage() {
       <div className="mx-auto max-w-5xl px-6 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-slate-900">Dienst stornieren</h1>
-          <Link href="/dienstbuchung" className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors">
+          <Link href={backHref} className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors">
             Zurück
           </Link>
         </div>

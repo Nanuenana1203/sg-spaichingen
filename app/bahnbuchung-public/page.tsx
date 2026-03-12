@@ -1,9 +1,9 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import BackLink from "./BackLink";
 import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Toaster, toast } from "sonner";
 
 type Slot = { start: string; end: string; booked: any; by?: string };
@@ -55,6 +55,15 @@ function groupOf(n: number): "lw" | "kw" | "other" {
 }
 
 export default function BahnbuchungPage() {
+  return <Suspense><BahnbuchungInner /></Suspense>;
+}
+
+function BahnbuchungInner() {
+  const searchParams = useSearchParams();
+  const isIntern = searchParams.get("ref") === "intern";
+  const backHref = isIntern ? "/dashboard" : "/";
+  const stornoHref = isIntern ? "/bahnbuchung-storno?ref=intern" : "/bahnbuchung-storno";
+
   const now = useMemo(() => new Date(), []);
   const todayStr = toDateStr(now);
 
@@ -215,14 +224,12 @@ export default function BahnbuchungPage() {
         <h1 className="text-3xl font-semibold">Bahn Buchung</h1>
         <div className="flex gap-2">
           <Link
-            href="/bahnbuchung-storno"
+            href={stornoHref}
             className="px-3 py-2 rounded border text-sm bg-red-600 hover:bg-red-700"
           >
             Buchung stornieren
           </Link>
-          <Suspense fallback={null}>
-            <BackLink className="px-3 py-2 rounded border text-sm">Zurück</BackLink>
-          </Suspense>
+          <Link href={backHref} className="px-3 py-2 rounded border text-sm">Zurück</Link>
         </div>
       </div>
 

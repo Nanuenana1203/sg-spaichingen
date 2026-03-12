@@ -6,12 +6,15 @@ const PUBLIC_PATHS = [
   "/",
   "/auth",
   "/bahnbuchung-public",
+  "/bahnbuchung-storno",
   "/dienstbuchung-public",
+  "/dienstbuchung-storno",
   "/api/login",
   "/api/logout",
   "/api/session",
   "/api/available-days",
   "/api/slots",
+  "/api/buchen",
   "/api/buchungen",
   "/api/dienste-public",
   "/api/dienst-buchen-public",
@@ -32,17 +35,19 @@ export function proxy(req: NextRequest) {
 
   // Öffentliche Pfade durchlassen
   const isPublic = PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + "/"));
-  if (isPublic) return NextResponse.next();
 
   // Alle anderen Pfade: Session prüfen
   const hasSession = req.cookies.has("sgs_user");
-  if (!hasSession) {
+  if (!isPublic && !hasSession) {
     const url = req.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
   }
 
-  return NextResponse.next();
+  // Pathname als Header weiterleiten (wird vom (standalone)-Layout gelesen)
+  const res = NextResponse.next();
+  res.headers.set("x-pathname", pathname);
+  return res;
 }
 
 export const config = {

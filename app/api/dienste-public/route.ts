@@ -4,14 +4,14 @@ import { BASE, KEY, headers } from "../_supabase";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-/** Öffentlich: aktive Dienste mit Slots — keine Namen oder Telefonnummern */
+/** Öffentlich: aktive Dienste mit Slots — Namen sichtbar, keine Telefonnummern */
 export async function GET() {
   if (!BASE || !KEY) return NextResponse.json([], { status: 200 });
 
-  // Dienste + Slots laden
+  // Dienste + Slots + Zeilen laden (ohne telefon)
   const url =
     `${BASE}/rest/v1/dienste` +
-    `?select=id,titel,event,kategorie,aktiv,created_at,dienst_slots(id,datum_von,datum_bis,uhrzeit_von,uhrzeit_bis,dauer_minuten,anzahl_personen)` +
+    `?select=id,titel,beschreibung,event,kategorie,aktiv,created_at,dienst_slots(id,datum_von,datum_bis,uhrzeit_von,uhrzeit_bis,dauer_minuten,anzahl_personen,dienst_zeilen(id,nummer,name,datum,buchung_von,buchung_bis))` +
     `&aktiv=eq.true` +
     `&order=created_at.desc`;
 
@@ -22,36 +22,17 @@ export async function GET() {
   let dienste: Record<string, unknown>[] = [];
   try { dienste = JSON.parse(t); } catch { return NextResponse.json([]); }
 
-  // Pro Slot: Anzahl gebuchter Zeilen nachladen (ohne Namen preiszugeben)
-  const slotIds = dienste.flatMap((d: Record<string, unknown>) =>
-    ((d.dienst_slots as Record<string, unknown>[]) ?? []).map((s: Record<string, unknown>) => s.id)
-  );
-
-  let buchungenMap: Record<number, number> = {};
-  if (slotIds.length > 0) {
-    const bUrl =
-      `${BASE}/rest/v1/dienst_zeilen` +
-      `?select=dienst_slot_id` +
-      `&dienst_slot_id=in.(${slotIds.join(",")})` +
-      `&name=not.is.null`;
-    const rb = await fetch(bUrl, { headers, cache: "no-store" });
-    const tb = await rb.text();
-    try {
-      const rows: { dienst_slot_id: number }[] = JSON.parse(tb);
-      for (const row of rows) {
-        buchungenMap[row.dienst_slot_id] = (buchungenMap[row.dienst_slot_id] ?? 0) + 1;
-      }
-    } catch {}
-  }
-
-  // Slots um anzahl_gebucht ergänzen — keine Personendaten
+  // anzahl_gebucht pro Slot berechnen und Slots anreichern
   const result = dienste.map((d: Record<string, unknown>) => ({
     ...d,
-    dienst_slots: ((d.dienst_slots as Record<string, unknown>[]) ?? []).map((s: Record<string, unknown>) => ({
-      ...s,
-      anzahl_gebucht: buchungenMap[s.id as number] ?? 0,
-      dienst_zeilen: [], // keine Personendaten im öffentlichen Bereich
-    })),
+    dienst_slots: ((d.dienst_slots as Record<string, unknown>[]) ?? []).map((s: Record<string, unknown>) => {
+      const zeilen = (s.dienst_zeilen as Record<string, unknown>[]) ?? [];
+      return {
+        ...s,
+        anzahl_gebucht: zeilen.filter(z => z.name).length,
+        dienst_zeilen: zeilen, // Namen enthalten, kein telefon
+      };
+    }),
   }));
 
   return NextResponse.json(result);

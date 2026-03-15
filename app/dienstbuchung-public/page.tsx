@@ -5,6 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
 
+type Zeile = {
+  id: number;
+  nummer: number;
+  name: string | null;
+  datum?: string | null;
+  buchung_von?: string | null;
+  buchung_bis?: string | null;
+};
 type DienstSlot = {
   id: number;
   datum_von: string;
@@ -14,11 +22,12 @@ type DienstSlot = {
   dauer_minuten: number | null;
   anzahl_personen: number;
   anzahl_gebucht?: number;
-  dienst_zeilen: { id: number; nummer: number }[];
+  dienst_zeilen: Zeile[];
 };
 type Dienst = {
   id: number;
   titel: string;
+  beschreibung: string | null;
   event: string | null;
   kategorie: string | null;
   aktiv: boolean;
@@ -215,10 +224,14 @@ export default function DienstbuchungPublicPage() {
                             <div key={dienst.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                               <div className="px-6 py-3 border-b border-slate-100 bg-slate-50">
                                 <h3 className="text-base font-bold text-slate-900">{dienst.titel}</h3>
+                                {dienst.beschreibung && (
+                                  <p className="mt-1 text-sm text-slate-600 whitespace-pre-line">{dienst.beschreibung}</p>
+                                )}
                               </div>
                               <div className="divide-y divide-slate-100">
                                 {slots.map(slot => {
-                                  const gebucht = slot.anzahl_gebucht ?? 0;
+                                  const zeilen = slot.dienst_zeilen ?? [];
+                                  const gebucht = zeilen.filter(z => z.name).length || (slot.anzahl_gebucht ?? 0);
                                   const frei = slot.anzahl_personen - gebucht;
                                   const ausgebucht = frei <= 0;
                                   const flex = isFlexible(slot);
@@ -297,6 +310,36 @@ export default function DienstbuchungPublicPage() {
                                                 </button>
                                               </div>
                                             </div>
+                                          </div>
+                                        )}
+                                        {zeilen.length > 0 && (
+                                          <div className="mx-5 mb-4 rounded-xl border border-slate-200 overflow-hidden">
+                                            <table className="w-full">
+                                              <thead className="bg-slate-50 border-b border-slate-200">
+                                                <tr>
+                                                  <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Platz</th>
+                                                  <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Name</th>
+                                                  <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Datum</th>
+                                                  <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Uhrzeit</th>
+                                                </tr>
+                                              </thead>
+                                              <tbody>
+                                                {zeilen.slice().sort((a, b) => a.nummer - b.nummer).map(z => (
+                                                  <tr key={z.id} className={`border-t border-slate-100 ${z.name ? "" : "bg-slate-50/50"}`}>
+                                                    <td className="px-3 py-2 text-xs text-slate-500">{z.nummer}</td>
+                                                    <td className="px-3 py-2 text-sm">
+                                                      {z.name
+                                                        ? <span className="font-medium text-slate-800">{z.name}</span>
+                                                        : <span className="text-slate-300 italic text-xs">frei</span>}
+                                                    </td>
+                                                    <td className="px-3 py-2 text-sm text-slate-600">{z.datum ? fmtDate(z.datum) : (z.name ? "–" : "")}</td>
+                                                    <td className="px-3 py-2 text-sm text-slate-600">
+                                                      {z.buchung_von ? `${fmtTime(z.buchung_von)} – ${fmtTime(z.buchung_bis ?? null)}` : (z.name ? "–" : "")}
+                                                    </td>
+                                                  </tr>
+                                                ))}
+                                              </tbody>
+                                            </table>
                                           </div>
                                         )}
                                       </div>

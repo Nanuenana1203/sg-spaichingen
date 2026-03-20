@@ -49,7 +49,7 @@ export async function POST(req: Request) {
   if (buchung_von) patch.buchung_von = buchung_von;
   if (buchung_bis) patch.buchung_bis = buchung_bis;
 
-  const rb = await fetch(`${BASE}/rest/v1/dienst_zeilen?id=eq.${zeile_id}`, {
+  const rb = await fetch(`${BASE}/rest/v1/dienst_zeilen?id=eq.${zeile_id}&name=is.null`, {
     method: "PATCH",
     headers,
     body: JSON.stringify(patch),

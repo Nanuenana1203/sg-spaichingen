@@ -16,18 +16,17 @@
   --color-blue-900: #8f3318;
 }
 
-/* Hintergrundbild auf allen Seiten */
-body{
-  padding-bottom:160px;
+/* Hintergrundbild auf allen Seiten – als fixed Pseudo-Element für Mobile-Kompatibilität */
+body {
+  padding-bottom: 160px;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
   background-image: url('/sg-bg.jpg');
   background-size: cover;
   background-position: left top;
-  background-attachment: fixed;
-}
-
-/* background-attachment: fixed wird auf Mobile nicht unterstützt */
-@media (max-width: 768px) {
-  body {
-    background-attachment: scroll;
-  }
+  z-index: -1;
 }

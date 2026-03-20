@@ -63,3 +63,6 @@ full-backup*
 
 # Superpowers brainstorm sessions
 .superpowers/
+
+# Claude Code lokale Einstellungen (können Tokens enthalten)
+.claude/settings.local.json

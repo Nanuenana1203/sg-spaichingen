@@ -1,4 +1,5 @@
 import "../globals.css";
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { cookies } from "next/headers";
@@ -8,7 +9,7 @@ import SessionGuard from "./SessionGuard";
 
 export const metadata = { title: "SGS" };
 
-const navItem = "block px-3 py-1.5 rounded-md text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors";
+const navItem = "block px-3 py-1.5 rounded-md text-sm text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors";
 const navSection = "flex items-center gap-2 px-1 pt-3 pb-1";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
@@ -19,10 +20,20 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const years = year <= start ? `${start}` : `${start}–${year}`;
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900">
+    <div className="min-h-screen text-slate-900">
       <div className="mx-auto max-w-7xl flex">
-        <aside className="w-52 shrink-0 p-3 sticky top-0 h-screen overflow-y-auto">
-          <nav className="space-y-0.5">
+        <aside className="w-52 shrink-0 sticky top-0 h-screen overflow-y-auto bg-white border-r border-slate-200">
+          {/* Sidebar-Header mit SGS-Branding */}
+          <div className="px-3 py-3 border-b border-blue-700 bg-blue-600">
+            <div className="flex items-center gap-2.5">
+              <Image src="/sg-logo.png" alt="SG Spaichingen" width={32} height={58} className="shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-white leading-tight">SG Spaichingen</p>
+                <p className="text-[10px] text-blue-200 leading-tight">Kassensystem</p>
+              </div>
+            </div>
+          </div>
+          <nav className="space-y-0.5 p-3">
             <div className={navSection}>
               <span className="w-1 h-3.5 rounded-full bg-blue-400 shrink-0" />
               <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Kasse</span>
@@ -69,7 +80,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       </div>
 
       <div
-        className="fixed bottom-4 right-6 z-[2147483647] pointer-events-none text-xs text-slate-400 bg-white/85 backdrop-blur px-3 py-2 rounded-lg border border-slate-200 shadow"
+        className="fixed bottom-4 right-6 z-[2147483647] pointer-events-none text-xs text-slate-400 bg-white/85 backdrop-blur px-3 py-2 rounded-lg border border-blue-100 shadow"
         style={{ transform: "translate3d(0,0,0)" }}
       >
         Copyright © {years} Nanuenana

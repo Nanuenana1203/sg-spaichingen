@@ -42,7 +42,7 @@ export default function DienstStornoPage() {
 
 function DienstStornoInner() {
   const searchParams = useSearchParams();
-  const backHref = searchParams.get("ref") === "intern" ? "/dashboard" : "/dienstbuchung-public";
+  const backHref = searchParams.get("ref") === "intern" ? "/dienstbuchung" : "/dienstbuchung-public";
   const [name, setName] = useState("");
   const [items, setItems] = useState<Zeile[]>([]);
   const [msg, setMsg] = useState("");
@@ -79,7 +79,7 @@ function DienstStornoInner() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       <div className="mx-auto max-w-5xl px-6 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-slate-900">Dienst stornieren</h1>

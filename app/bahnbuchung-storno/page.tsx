@@ -21,7 +21,7 @@ export default function StornoPage() {
 
 function StornoInner() {
   const searchParams = useSearchParams();
-  const backHref = searchParams.get("ref") === "intern" ? "/dashboard" : "/bahnbuchung-public";
+  const backHref = searchParams.get("ref") === "intern" ? "/bahnbuchung-public?ref=intern" : "/bahnbuchung-public";
 
   const [email, setEmail] = useState("");
   const [items, setItems] = useState<Buchung[]>([]);

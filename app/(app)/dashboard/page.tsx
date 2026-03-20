@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 
 export const metadata: Metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
@@ -128,6 +129,10 @@ export default async function Page() {
 
   return (
     <div className="space-y-6">
+      <div className="relative w-full h-[120px] rounded-2xl overflow-hidden shadow-sm">
+        <Image src="/sg-banner4.png" alt="SG Spaichingen" fill style={{ objectFit: "cover", objectPosition: "center center" }} priority />
+      </div>
+
       <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">

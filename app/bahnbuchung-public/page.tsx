@@ -217,20 +217,33 @@ function BahnbuchungInner() {
   }
 
   return (
-    <div className="max-w-[1200px] mx-auto p-4 pb-4 relative">
+    <div className="min-h-screen">
       <Toaster richColors position="top-center" />
+
+      {/* SGS Header */}
+      <header className="bg-blue-600 text-white px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/sg-logo.png" alt="SG Spaichingen" width={28} height={50} />
+          <div>
+            <p className="text-sm font-bold leading-tight">SG Spaichingen</p>
+            <p className="text-xs opacity-75 leading-tight">Öffentliche Buchung</p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Link href={stornoHref} className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-medium hover:bg-red-700 transition-colors">
+            Buchung stornieren
+          </Link>
+          <Link href={backHref} className="px-3 py-1.5 rounded-lg bg-white/20 text-white text-xs font-medium hover:bg-white/30 transition-colors">
+            Zurück
+          </Link>
+        </div>
+      </header>
+
+    <div className="max-w-[1200px] mx-auto p-4 pb-4 relative">
 
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-3xl font-semibold">Bahn Buchung</h1>
-        <div className="flex gap-2">
-          <Link
-            href={stornoHref}
-            className="px-3 py-2 rounded border text-sm bg-red-600 hover:bg-red-700"
-          >
-            Buchung stornieren
-          </Link>
-          <Link href={backHref} className="px-3 py-2 rounded border text-sm">Zurück</Link>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 items-end gap-4 mb-4">
@@ -334,7 +347,8 @@ function BahnbuchungInner() {
 
       <div className="mt-8 w-full text-right text-xs font-bold text-slate-500 pr-2">Copyright © 2025–{new Date().getFullYear()} Nanuenana</div>
 
-      
+
+    </div>
     </div>
   );
 }

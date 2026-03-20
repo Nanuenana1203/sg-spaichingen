@@ -50,7 +50,7 @@ export default function KassenbestandPage() {
   const totalAll = totalCoins + totalNotes;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       <div className="mx-auto max-w-5xl px-6 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-slate-900">Kassenbestand prüfen</h1>

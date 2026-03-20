@@ -51,7 +51,7 @@ export default function NeuerArtikel() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       <div className="mx-auto max-w-4xl px-6 py-8">
         <h1 className="text-2xl font-bold text-slate-900 mb-6">Neuer Artikel</h1>
 

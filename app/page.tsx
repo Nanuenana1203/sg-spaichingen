@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { getDeviceToken } from "../lib/deviceToken";
 
@@ -31,7 +32,12 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-4 gap-4">
+    <div
+      className="min-h-screen flex flex-col items-center justify-center px-4 gap-4"
+    >
+
+      {/* SGS-Logo */}
+      <Image src="/sg-logo.png" alt="SG Spaichingen" width={80} height={144} className="drop-shadow-lg" priority />
 
       {/* Anmeldeformular */}
       <div className="w-full max-w-sm bg-white rounded-2xl border border-slate-200 shadow-sm p-8">

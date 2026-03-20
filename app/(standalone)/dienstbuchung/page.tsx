@@ -2,7 +2,6 @@
 
 import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
 import * as XLSX from "xlsx";
 
@@ -110,7 +109,6 @@ const inp = "px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-
 type Gate = "loading" | "ok" | "no-session" | "forbidden";
 
 export default function DienstbuchungPage() {
-  const router = useRouter();
   const [gate, setGate] = useState<Gate>("loading");
   const [dienste, setDienste] = useState<Dienst[]>([]);
   const [loading, setLoading] = useState(true);
@@ -246,7 +244,7 @@ export default function DienstbuchungPage() {
     const btnHref = gate === "no-session" ? "/" : "/dashboard";
     const btnText = gate === "no-session" ? "Zur Anmeldung" : "Zum Dashboard";
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+      <div className="min-h-screen flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-md w-full text-center space-y-4">
           <h1 className="text-xl font-bold text-slate-900">{title}</h1>
           {msg && <p className="text-sm text-slate-600">{msg}</p>}
@@ -261,7 +259,7 @@ export default function DienstbuchungPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center">
       <p className="text-slate-500 text-sm">Lade…</p>
     </div>
   );
@@ -269,7 +267,7 @@ export default function DienstbuchungPage() {
   const eventGroups = buildEventGroups(dienste);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       <Toaster richColors position="top-center" />
       <div className="mx-auto max-w-5xl px-6 py-8">
 
@@ -283,9 +281,9 @@ export default function DienstbuchungPage() {
             <Link href="/dienstbuchung-storno?ref=intern" className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors">
               Buchung stornieren
             </Link>
-            <button onClick={() => router.back()} className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors">
+            <Link href="/dienste" className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors">
               Zurück
-            </button>
+            </Link>
           </div>
         </div>
 

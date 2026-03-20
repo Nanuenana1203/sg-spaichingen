@@ -235,7 +235,7 @@ export default function KassePage() {
   }, [kachelArtikel, auswahl]);
 
   return (
-    <div className={"min-h-screen " + (isStorno ? "bg-red-50" : "bg-slate-50")}>
+    <div className={"min-h-screen " + (isStorno ? "bg-red-50" : "")}>
     <div className={"p-6 space-y-5 max-w-7xl mx-auto"}>
       {/* Kopf */}
       <div className="flex items-center justify-between">

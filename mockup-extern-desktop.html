@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SGS App – Öffentliche Buchungsseite Desktop (Mockup)</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f2f9f5;min-height:100vh;color:#1e293b;display:flex;flex-direction:column}
+  :root{--green:#5aa37b;--orange:#dd542a;--green-light:#e8f4ee;--green-lighter:#f2f9f5}
+
+  /* Header */
+  .header{background:var(--green);color:#fff;padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px}
+  .header-logo{display:flex;align-items:center;gap:10px}
+  .header-logo-icon{width:34px;height:34px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px}
+  .header-logo-text{font-size:15px;font-weight:700}
+  .header-logo-sub{font-size:10px;opacity:0.8}
+  .header-back{font-size:12px;color:rgba(255,255,255,0.85);text-decoration:none;display:flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.3);transition:all 0.15s}
+  .header-back:hover{background:rgba(255,255,255,0.1)}
+
+  /* Main content */
+  .main{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:40px 24px}
+
+  /* Card */
+  .card{background:#fff;border-radius:16px;border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,0.08);width:100%;max-width:640px;overflow:hidden}
+  .card-header{padding:20px 24px;border-bottom:1px solid #f1f5f9}
+  .card-title{font-size:18px;font-weight:700;color:#1e293b}
+  .card-body{padding:24px}
+
+  /* Form elements */
+  .form-label{font-size:12px;font-weight:600;color:#64748b;margin-bottom:4px;display:block}
+  .form-input{width:100%;padding:8px 12px;border-radius:8px;border:1px solid #cbd5e1;font-size:13px;color:#1e293b;margin-bottom:14px;outline:none;transition:all 0.15s}
+  .form-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(90,163,123,0.15)}
+
+  /* Slot list */
+  .slot-section{margin-bottom:20px}
+  .slot-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--green);margin-bottom:12px}
+  .slot-item{border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:all 0.15s}
+  .slot-item:hover{border-color:var(--green);background:var(--green-lighter)}
+  .slot-item.selected{border-color:var(--green);background:var(--green-light)}
+  .slot-date{font-size:12px;font-weight:600;color:#334155}
+  .slot-time{font-size:11px;color:#64748b;margin-top:2px}
+  .slot-spots{font-size:11px;color:var(--green);margin-top:2px;font-weight:500}
+
+  /* Buttons */
+  .btn-primary{display:inline-flex;align-items:center;justify-content:center;padding:10px 20px;border-radius:8px;background:var(--green);color:#fff;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all 0.15s;text-decoration:none}
+  .btn-primary:hover{background:var(--orange)}
+  .btn-secondary{display:inline-flex;align-items:center;justify-content:center;padding:10px 20px;border-radius:8px;background:#f1f5f9;color:#475569;font-size:13px;font-weight:500;border:none;cursor:pointer;transition:all 0.15s;text-decoration:none}
+  .btn-secondary:hover{background:#e2e8f0}
+  .btn-row{display:flex;gap:10px;margin-top:4px}
+
+  /* Footer */
+  footer{padding:14px 32px;text-align:right;font-size:11px;color:#94a3b8;background:#fff;border-top:1px solid #f1f5f9}
+
+  /* Annotation */
+  .annotation{position:fixed;top:8px;right:8px;background:var(--orange);color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;z-index:99}
+</style>
+</head>
+<body>
+<div class="annotation">Mockup: Öffentlich Desktop</div>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-logo">
+    <div class="header-logo-icon">SG</div>
+    <div>
+      <div class="header-logo-text">SG Spaichingen</div>
+      <div class="header-logo-sub">Öffentliche Buchung</div>
+    </div>
+  </div>
+  <a class="header-back" href="#">← Zurück</a>
+</header>
+
+<!-- Main -->
+<main class="main">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Dienstbuchung</div>
+    </div>
+    <div class="card-body">
+
+      <div class="slot-section">
+        <div class="slot-section-title">Verfügbare Termine</div>
+
+        <div class="slot-item selected">
+          <div class="slot-date">Samstag, 22. März 2026</div>
+          <div class="slot-time">09:00 – 13:00 Uhr (4 Std.)</div>
+          <div class="slot-spots">2 von 3 Plätzen frei</div>
+        </div>
+
+        <div class="slot-item">
+          <div class="slot-date">Samstag, 29. März 2026</div>
+          <div class="slot-time">09:00 – 13:00 Uhr (4 Std.)</div>
+          <div class="slot-spots">3 von 3 Plätzen frei</div>
+        </div>
+
+        <div class="slot-item">
+          <div class="slot-date">Samstag, 5. April 2026</div>
+          <div class="slot-time">09:00 – 13:00 Uhr (4 Std.)</div>
+          <div class="slot-spots">1 von 3 Plätzen frei</div>
+        </div>
+      </div>
+
+      <label class="form-label">Ihr Name</label>
+      <input class="form-input" type="text" placeholder="Vor- und Nachname" value="Max Mustermann">
+
+      <label class="form-label">Telefonnummer (optional)</label>
+      <input class="form-input" type="tel" placeholder="+49 7424 ...">
+
+      <div class="btn-row">
+        <button class="btn-primary">Jetzt buchen</button>
+        <button class="btn-secondary">Abbrechen</button>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer>Copyright © 2025–2026 Nanuenana</footer>
+</body>
+</html>

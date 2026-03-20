@@ -40,13 +40,13 @@ export default function EditMitglied() {
   }
 
   if (loading || !m) return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center">
       <p className="text-slate-500 text-sm">Lade…</p>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       <div className="mx-auto max-w-4xl px-6 py-8">
         <h1 className="text-2xl font-bold text-slate-900 mb-6">Kunde bearbeiten</h1>
 

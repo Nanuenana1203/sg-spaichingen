@@ -58,7 +58,7 @@ export default function DienstePage() {
     const btnHref = gate === "no-session" ? "/" : "/dashboard";
     const btnText = gate === "no-session" ? "Zur Anmeldung" : "Zum Dashboard";
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+      <div className="min-h-screen flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-md w-full text-center space-y-4">
           <h1 className="text-xl font-bold text-slate-900">{title}</h1>
           {msg && <p className="text-sm text-slate-600">{msg}</p>}
@@ -73,7 +73,7 @@ export default function DienstePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       <div className="mx-auto max-w-6xl px-6 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-slate-900">Dienste</h1>

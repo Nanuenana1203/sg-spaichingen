@@ -1,6 +1,26 @@
 @import "tailwindcss";
-/* Platz für kleine globale Styles */
 
+/* SGS-Farbpalette – überschreibt Tailwind-Blue mit Vereinsfarben */
+@theme {
+  /* Primär: Schützengrün */
+  --color-blue-50:  #f2f9f5;
+  --color-blue-100: #e8f4ee;
+  --color-blue-200: #c6e5d3;
+  --color-blue-300: #94cbb0;
+  --color-blue-400: #5aa37b;
+  --color-blue-500: #5aa37b;
+  --color-blue-600: #5aa37b;
+  /* Akzent: Orange (Hover) */
+  --color-blue-700: #dd542a;
+  --color-blue-800: #b8431f;
+  --color-blue-900: #8f3318;
+}
 
-/* copyrightbadge safe-area */
-body{padding-bottom:160px;}
+/* Hintergrundbild auf allen Seiten */
+body{
+  padding-bottom:160px;
+  background-image: url('/sg-bg.jpg');
+  background-size: cover;
+  background-position: left top;
+  background-attachment: fixed;
+}

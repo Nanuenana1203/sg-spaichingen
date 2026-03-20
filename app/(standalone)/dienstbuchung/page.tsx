@@ -281,7 +281,7 @@ export default function DienstbuchungPage() {
             <Link href="/dienstbuchung-storno?ref=intern" className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors">
               Buchung stornieren
             </Link>
-            <Link href="/dienste" className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors">
+            <Link href="/dashboard" className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors">
               Zurück
             </Link>
           </div>

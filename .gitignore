@@ -53,3 +53,13 @@ structure-*/
 snap-*/
 repo.tgz
 full-backup*
+
+# Projektdaten & Office-Dokumente
+*.doc
+*.docx
+*.xls
+*.xlsx
+.~lock.*
+
+# Superpowers brainstorm sessions
+.superpowers/

@@ -84,7 +84,13 @@ export default function Home() {
         Dienstbuchung (öffentlicher Bereich)
       </Link>
 
-      <p className="mt-4 text-xs text-slate-400">
+      {/* Datenschutzhinweis */}
+      <p className="w-full max-w-sm text-center text-[10px] text-slate-400 leading-relaxed">
+        In den öffentlichen Bereichen sind eingegebene Namen für alle Besucher sichtbar.
+        Mit der Nutzung dieser Seite wird die Datenschutzerklärung akzeptiert.
+      </p>
+
+      <p className="text-xs text-slate-400">
         Copyright © 2025–{new Date().getFullYear()} Nanuenana
       </p>
     </div>

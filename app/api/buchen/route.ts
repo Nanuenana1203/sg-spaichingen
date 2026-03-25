@@ -63,5 +63,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok:false, error: err || "insert failed" }, { status: 400 });
   }
 
+  // Vergangene Buchungen im Hintergrund löschen (fire-and-forget)
+  const today = new Date().toISOString().slice(0, 10);
+  void fetch(`${BASE}/rest/v1/bahn_buchungen?datum=lt.${today}`, {
+    method: "DELETE",
+    headers,
+  });
+
   return NextResponse.json({ ok:true });
 }

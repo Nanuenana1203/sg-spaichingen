@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     const from = todayUTC();
     const url = `${BASE}/rest/v1/bahn_buchungen`
       + `?select=id,bahn_id,datum,start_time,end_time,name,email,bahnen(name)`
-      + `&email=ilike.*${encodeURIComponent(email)}*`
+      + `&email=ilike.${encodeURIComponent(email)}`
       + `&datum=gte.${from}`
       + `&order=datum.asc, start_time.asc`;
 
